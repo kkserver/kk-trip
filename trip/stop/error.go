@@ -1,0 +1,7 @@
+package stop
+
+const ERROR_STOP = 0x11000
+
+const ERROR_STOP_NOT_FOUND_ID = ERROR_STOP + 1
+
+const ERROR_STOP_NOT_FOUND_STOP = ERROR_STOP + 2

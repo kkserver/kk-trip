@@ -1,0 +1,7 @@
+package line
+
+const ERROR_LINE = 0x12000
+
+const ERROR_LINE_NOT_FOUND_ID = ERROR_LINE + 1
+
+const ERROR_LINE_NOT_FOUND_LINE = ERROR_LINE + 2
