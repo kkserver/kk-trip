@@ -753,16 +753,26 @@ func (S *TicketService) HandleTriggerOrderTimeoutDidTask(a ITicketApp, task *ord
 
 	err = func() error {
 
-		_, err := db.Exec(fmt.Sprintf("UPDATE %s%s as a SET a.count = a.count - (SELECT COUNT(id) FROM %s%s as b WHERE b.orderid=? AND b.scheduleid=a.id GROUP BY b.scheduleid ) ", a.GetPrefix(), a.GetScheduleTable().Name, a.GetPrefix(), a.GetTicketTable().Name), task.Order.Id)
+		rows, err := db.Query(fmt.Sprintf("SELECT scheduleid, COUNT(id) FROM %s%s WHERE orderid=? AND status=? GROUP BY scheduleid", a.GetPrefix(), a.GetTicketTable()), task.Order.Id, TicketStatusNone)
 
 		if err != nil {
 			return err
 		}
 
-		_, err = db.Exec(fmt.Sprintf("UPDATE %s%s as a SET a.count = 0 WHERE ISNULL(a.count) ", a.GetPrefix(), a.GetScheduleTable().Name, a.GetPrefix(), a.GetTicketTable().Name))
+		defer rows.Close()
 
-		if err != nil {
-			return err
+		var id int64 = 0
+		var count int64 = 0
+
+		for rows.Next() {
+			err = rows.Scan(&id, &count)
+			if err != nil {
+				return err
+			}
+			_, err = db.Exec(fmt.Sprintf("UPDATE %s%s SET `count` = `count` - ? WHERE id=?", a.GetPrefix(), a.GetScheduleTable().Name), count, id)
+			if err != nil {
+				return err
+			}
 		}
 
 		_, err = db.Exec(fmt.Sprintf("UPDATE %s%s SET status=? WHERE status=? AND orderid=?", a.GetPrefix(), a.GetTicketTable().Name), TicketStatusTimeout, TicketStatusNone, task.Order.Id)
@@ -821,16 +831,26 @@ func (S *TicketService) HandleTriggerOrderCancelDidTask(a ITicketApp, task *orde
 
 	err = func() error {
 
-		_, err := db.Exec(fmt.Sprintf("UPDATE %s%s as a SET a.count = a.count - (SELECT COUNT(id) FROM %s%s as b WHERE b.orderid=? AND b.scheduleid=a.id GROUP BY b.scheduleid ) ", a.GetPrefix(), a.GetScheduleTable().Name, a.GetPrefix(), a.GetTicketTable().Name), task.Order.Id)
+		rows, err := db.Query(fmt.Sprintf("SELECT scheduleid, COUNT(id) FROM %s%s WHERE orderid=? AND status=? GROUP BY scheduleid", a.GetPrefix(), a.GetTicketTable()), task.Order.Id, TicketStatusNone)
 
 		if err != nil {
 			return err
 		}
 
-		_, err = db.Exec(fmt.Sprintf("UPDATE %s%s as a SET a.count = 0 WHERE ISNULL(a.count) ", a.GetPrefix(), a.GetScheduleTable().Name, a.GetPrefix(), a.GetTicketTable().Name))
+		defer rows.Close()
 
-		if err != nil {
-			return err
+		var id int64 = 0
+		var count int64 = 0
+
+		for rows.Next() {
+			err = rows.Scan(&id, &count)
+			if err != nil {
+				return err
+			}
+			_, err = db.Exec(fmt.Sprintf("UPDATE %s%s SET `count` = `count` - ? WHERE id=?", a.GetPrefix(), a.GetScheduleTable().Name), count, id)
+			if err != nil {
+				return err
+			}
 		}
 
 		_, err = db.Exec(fmt.Sprintf("UPDATE %s%s SET status=? WHERE status=? AND orderid=?", a.GetPrefix(), a.GetTicketTable().Name), TicketStatusCancel, TicketStatusNone, task.Order.Id)

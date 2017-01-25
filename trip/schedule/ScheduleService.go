@@ -32,6 +32,37 @@ func (S *ScheduleService) Handle(a app.IApp, task app.ITask) error {
 	return app.ServiceReflectHandle(a, task, S)
 }
 
+func (S *ScheduleService) HandleInitTask(a IScheduleApp, task *app.InitTask) error {
+
+	var db, err = a.GetDB()
+
+	if err != nil {
+		return err
+	}
+
+	go func() {
+
+		for {
+
+			now := time.Now().Unix()
+
+			_, err := db.Exec(fmt.Sprintf("UPDATE %s%s SET status=? WHERE status=? AND intime<=?", a.GetPrefix(), a.GetScheduleTable().Name), ScheduleStatusIn, ScheduleStatusNone, now)
+
+			if err != nil {
+				log.Println("ScheduleService", err.Error())
+			}
+
+			log.Println("ScheduleService", "In")
+
+			time.Sleep(6 * time.Second)
+
+		}
+
+	}()
+
+	return nil
+}
+
 func (S *ScheduleService) HandleScheduleCreateTask(a IScheduleApp, task *ScheduleCreateTask) error {
 
 	if task.LineId == 0 {
