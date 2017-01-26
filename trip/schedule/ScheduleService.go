@@ -45,9 +45,10 @@ func (S *ScheduleService) HandleInitTask(a IScheduleApp, task *app.InitTask) err
 
 		for {
 
-			now := time.Now().Unix()
+			now := time.Now()
+			now = time.Date(now.Year(), now.Month(), now.Day(), 23, 59, 59, 0, now.Location())
 
-			_, err := db.Exec(fmt.Sprintf("UPDATE %s%s SET status=? WHERE status=? AND intime<=?", a.GetPrefix(), a.GetScheduleTable().Name), ScheduleStatusIn, ScheduleStatusNone, now)
+			_, err := db.Exec(fmt.Sprintf("UPDATE %s%s SET status=? WHERE status=? AND intime !=0 AND intime<=?", a.GetPrefix(), a.GetScheduleTable().Name), ScheduleStatusIn, ScheduleStatusNone, now.Unix())
 
 			if err != nil {
 				log.Println("ScheduleService", err.Error())
@@ -184,7 +185,7 @@ func (S *ScheduleService) HandleScheduleBatchSetTask(a IScheduleApp, task *Sched
 
 				v := Schedule{}
 
-				rows, err := kk.DBQuery(db, a.GetScheduleTable(), a.GetPrefix(), " WHERE lineid=? AND date=?", lineId, date)
+				rows, err := kk.DBQuery(db, a.GetScheduleTable(), a.GetPrefix(), " WHERE lineid=? AND date=?", lineId, date.Unix())
 
 				if err != nil {
 					return err
@@ -198,7 +199,7 @@ func (S *ScheduleService) HandleScheduleBatchSetTask(a IScheduleApp, task *Sched
 						return err
 					}
 
-					v.InTime = date.Add(-time.Second * 3600 * time.Duration(task.AdvanceDays)).Unix()
+					v.InTime = date.AddDate(0, 0, -task.AdvanceDays).Unix()
 
 					if v.Status == ScheduleStatusNone {
 						if now.Unix() >= v.InTime {
@@ -221,8 +222,9 @@ func (S *ScheduleService) HandleScheduleBatchSetTask(a IScheduleApp, task *Sched
 					v.Date = date.Unix()
 					v.MaxCount = task.MaxCount
 					v.UMaxCount = task.UMaxCount
-					v.InTime = date.Add(-time.Second * 3600 * time.Duration(task.AdvanceDays)).Unix()
+					v.InTime = date.AddDate(0, 0, -task.AdvanceDays).Unix()
 					v.Ctime = time.Now().Unix()
+
 					if now.Unix() >= v.InTime {
 						v.Status = ScheduleStatusIn
 					}
@@ -485,7 +487,7 @@ func (S *ScheduleService) HandleScheduleQueryTask(a IScheduleApp, task *Schedule
 		args = append(args, task.Id)
 	} else {
 
-		if task.LineId != nil {
+		if task.LineId != 0 {
 			sql.WriteString(" AND lineid=?")
 			args = append(args, task.LineId)
 		}
@@ -496,7 +498,7 @@ func (S *ScheduleService) HandleScheduleQueryTask(a IScheduleApp, task *Schedule
 		}
 
 		if task.EndDate != nil {
-			sql.WriteString(" AND date<=?")
+			sql.WriteString(" AND date<?")
 			args = append(args, task.EndDate)
 		}
 
@@ -562,6 +564,8 @@ func (S *ScheduleService) HandleScheduleQueryTask(a IScheduleApp, task *Schedule
 
 	}
 
+	fmt.Println("SQL", sql.String())
+
 	var v = Schedule{}
 	var scanner = kk.NewDBScaner(&v)
 
@@ -617,7 +621,7 @@ func (S *ScheduleService) HandleScheduleCountTask(a IScheduleApp, task *Schedule
 	}
 
 	if task.EndDate != nil {
-		sql.WriteString(" AND v.date<=?")
+		sql.WriteString(" AND v.date<?")
 		args = append(args, task.EndDate)
 	}
 
@@ -718,8 +722,9 @@ func (S *ScheduleService) HandleScheduleInTask(a IScheduleApp, task *ScheduleInT
 		if v.Status == ScheduleStatusNone {
 
 			v.Status = ScheduleStatusIn
+			v.InTime = time.Now().Unix()
 
-			_, err = kk.DBUpdateWithKeys(db, a.GetScheduleTable(), a.GetPrefix(), &v, map[string]bool{"status": true})
+			_, err = kk.DBUpdateWithKeys(db, a.GetScheduleTable(), a.GetPrefix(), &v, map[string]bool{"status": true, "intime": true})
 
 			if err != nil {
 				task.Result.Errno = ERROR_SCHEDULE
@@ -785,8 +790,9 @@ func (S *ScheduleService) HandleScheduleOffTask(a IScheduleApp, task *ScheduleOf
 		if v.Status == ScheduleStatusIn {
 
 			v.Status = ScheduleStatusNone
+			v.InTime = 0
 
-			_, err = kk.DBUpdateWithKeys(db, a.GetScheduleTable(), a.GetPrefix(), &v, map[string]bool{"status": true})
+			_, err = kk.DBUpdateWithKeys(db, a.GetScheduleTable(), a.GetPrefix(), &v, map[string]bool{"status": true, "intime": true})
 
 			if err != nil {
 				task.Result.Errno = ERROR_SCHEDULE

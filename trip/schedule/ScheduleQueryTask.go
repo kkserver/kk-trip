@@ -19,7 +19,7 @@ type ScheduleQueryTaskResult struct {
 type ScheduleQueryTask struct {
 	app.Task
 	Id        int64       `json:"id,string"`
-	LineId    interface{} `json:"lineId"`    //车次ID
+	LineId    int64       `json:"lineId"`    //车次ID
 	StartDate interface{} `json:"startDate"` //日期
 	EndDate   interface{} `json:"endDate"`   //日期
 	Status    string      `json:"status"`    //状态

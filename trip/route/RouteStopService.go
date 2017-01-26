@@ -6,6 +6,7 @@ import (
 	"github.com/kkserver/kk-lib/kk/app"
 	"github.com/kkserver/kk-lib/kk/dynamic"
 	"github.com/kkserver/kk-trip/trip/stop"
+	"log"
 	"time"
 )
 
@@ -18,6 +19,7 @@ type RouteStopService struct {
 	Remove   *RouteStopRemoveTask
 	Query    *RouteStopQueryTask
 	Exchange *RouteStopExchangeTask
+	BatchSet *RouteStopBatchSetTask
 }
 
 func (S *RouteStopService) Handle(a app.IApp, task app.ITask) error {
@@ -170,6 +172,153 @@ func (S *RouteStopService) HandleRouteStopSetTask(a IRouteApp, task *RouteStopSe
 		task.Result.Errno = ERROR_ROUTE_NOT_FOUND_ROUTE
 		task.Result.Errmsg = "Not found route"
 	}
+
+	return nil
+}
+
+func (S *RouteStopService) HandleRouteStopBatchSetTask(a IRouteApp, task *RouteStopBatchSetTask) error {
+
+	log.Println("RouteStopBatchSetTask", task)
+
+	if task.RouteId == 0 {
+		task.Result.Errno = ERROR_ROUTE_NOT_FOUND_ROUTE
+		task.Result.Errmsg = "Not found routeId"
+		return nil
+	}
+
+	var db, err = a.GetDB()
+
+	if err != nil {
+		task.Result.Errno = ERROR_ROUTE
+		task.Result.Errmsg = err.Error()
+		return nil
+	}
+
+	var rs = []RouteStop{}
+
+	tx, err := db.Begin()
+
+	err = func() error {
+
+		var stops = []RouteStop{}
+		var v = RouteStop{}
+		var scanner = kk.NewDBScaner(&v)
+
+		rows, err := kk.DBQuery(db, a.GetRouteStopTable(), a.GetPrefix(), " WHERE routeid=? ORDER BY direction ASC, type ASC,id ASC", task.RouteId)
+
+		if err != nil {
+			return nil
+		}
+
+		defer rows.Close()
+
+		for rows.Next() {
+
+			err = scanner.Scan(rows)
+
+			if err != nil {
+				task.Result.Errno = ERROR_ROUTE
+				task.Result.Errmsg = err.Error()
+				return nil
+			}
+
+			stops = append(stops, v)
+		}
+
+		var idx = 0
+
+		if task.Stops != nil {
+
+			for _, vv := range task.Stops {
+
+				if idx < len(stops) {
+					v = stops[idx]
+				} else {
+					v = RouteStop{}
+				}
+
+				v.RouteId = task.RouteId
+				v.Title = vv.Title
+				v.Direction = vv.Direction
+				v.Type = vv.Type
+				v.Latitude = vv.Latitude
+				v.Longitude = vv.Longitude
+				v.Ctime = time.Now().Unix()
+
+				{
+					t := stop.StopNearbyTask{}
+					t.Longitude = v.Longitude
+					t.Latitude = v.Latitude
+					t.Distance = StopNearbyDistance
+					t.PageIndex = 1
+					t.PageSize = 1
+					app.Handle(a, &t)
+					if t.Result.Stops != nil && len(t.Result.Stops) > 0 {
+						v.StopId = t.Result.Stops[0].Id
+					} else {
+						tt := stop.StopCreateTask{}
+						tt.Longitude = v.Longitude
+						tt.Latitude = v.Latitude
+						tt.Title = v.Title
+						app.Handle(a, &tt)
+						if tt.Result.Stop != nil {
+							v.StopId = tt.Result.Stop.Id
+						}
+					}
+				}
+
+				if v.Id == 0 {
+					_, err = kk.DBInsert(db, a.GetRouteStopTable(), a.GetPrefix(), &v)
+					if err != nil {
+						return err
+					}
+				} else {
+					_, err = kk.DBUpdate(db, a.GetRouteStopTable(), a.GetPrefix(), &v)
+					if err != nil {
+						return err
+					}
+				}
+
+				idx = idx + 1
+
+				rs = append(rs, v)
+
+			}
+
+		}
+
+		for idx < len(stops) {
+
+			_, err = kk.DBDelete(db, a.GetRouteStopTable(), a.GetPrefix(), " WHERE id=?", stops[idx].Id)
+
+			if err != nil {
+				return err
+			}
+
+			idx = idx + 1
+		}
+
+		return nil
+	}()
+
+	if err == nil {
+		err = tx.Commit()
+	}
+
+	if err != nil {
+		tx.Rollback()
+		e, ok := err.(*app.Error)
+		if ok {
+			task.Result.Errno = e.Errno
+			task.Result.Errmsg = e.Errmsg
+			return nil
+		}
+		task.Result.Errno = ERROR_ROUTE
+		task.Result.Errmsg = err.Error()
+		return nil
+	}
+
+	task.Result.Stops = rs
 
 	return nil
 }
