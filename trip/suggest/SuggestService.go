@@ -167,6 +167,26 @@ func (S *SuggestService) HandleSuggestLineTask(a ISuggestApp, task *SuggestLineT
 		}
 	}
 
+	if len(lines) < task.Limit {
+
+		t := line.LineQueryTask{}
+		t.PageSize = task.Limit - len(lines)
+		t.Status = "1"
+
+		app.Handle(a, &t)
+
+		if t.Result.Lines != nil {
+
+			for _, v := range t.Result.Lines {
+				_, ok := lineIds[v.Id]
+				if !ok {
+					lines = append(lines, v)
+					lineIds[v.Id] = true
+				}
+			}
+		}
+	}
+
 	task.Result.Lines = lines
 
 	return nil
