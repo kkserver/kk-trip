@@ -9,6 +9,7 @@ import (
 	"github.com/kkserver/kk-order/order"
 	"github.com/kkserver/kk-trip/trip/line"
 	"github.com/kkserver/kk-trip/trip/schedule"
+	"log"
 	"strings"
 	"time"
 )
@@ -739,6 +740,8 @@ func (S *TicketService) HandleTicketRefundTask(a ITicketApp, task *TicketRefundT
 
 func (S *TicketService) HandleTriggerOrderTimeoutDidTask(a ITicketApp, task *order.TriggerOrderTimeoutDidTask) error {
 
+	log.Println("TriggerOrderTimeoutDidTask")
+
 	var db, err = a.GetDB()
 
 	if err != nil {
@@ -769,6 +772,9 @@ func (S *TicketService) HandleTriggerOrderTimeoutDidTask(a ITicketApp, task *ord
 			if err != nil {
 				return err
 			}
+
+			log.Println(id, count)
+
 			_, err = db.Exec(fmt.Sprintf("UPDATE %s%s SET `count` = `count` - ? WHERE id=?", a.GetPrefix(), a.GetScheduleTable().Name), count, id)
 			if err != nil {
 				return err
@@ -817,6 +823,8 @@ func (S *TicketService) HandleTriggerOrderPayDidTask(a ITicketApp, task *order.T
 
 func (S *TicketService) HandleTriggerOrderCancelDidTask(a ITicketApp, task *order.TriggerOrderCancelDidTask) error {
 
+	log.Println("TriggerOrderCancelDidTask")
+
 	var db, err = a.GetDB()
 
 	if err != nil {
@@ -847,6 +855,9 @@ func (S *TicketService) HandleTriggerOrderCancelDidTask(a ITicketApp, task *orde
 			if err != nil {
 				return err
 			}
+
+			log.Println(id, count)
+
 			_, err = db.Exec(fmt.Sprintf("UPDATE %s%s SET `count` = `count` - ? WHERE id=?", a.GetPrefix(), a.GetScheduleTable().Name), count, id)
 			if err != nil {
 				return err
