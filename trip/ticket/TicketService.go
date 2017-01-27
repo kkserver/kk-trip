@@ -768,7 +768,9 @@ func (S *TicketService) HandleTriggerOrderTimeoutDidTask(a ITicketApp, task *ord
 		var count int64 = 0
 
 		for rows.Next() {
+
 			err = rows.Scan(&id, &count)
+
 			if err != nil {
 				return err
 			}
@@ -784,7 +786,7 @@ func (S *TicketService) HandleTriggerOrderTimeoutDidTask(a ITicketApp, task *ord
 		_, err = db.Exec(fmt.Sprintf("UPDATE %s%s SET status=? WHERE status=? AND orderid=?", a.GetPrefix(), a.GetTicketTable().Name), TicketStatusTimeout, TicketStatusNone, task.Order.Id)
 
 		if err != nil {
-			return nil
+			return err
 		}
 
 		return nil
@@ -795,10 +797,8 @@ func (S *TicketService) HandleTriggerOrderTimeoutDidTask(a ITicketApp, task *ord
 	}
 
 	if err != nil {
-		err = tx.Rollback()
-		if err != nil {
-			return err
-		}
+		log.Println(err)
+		tx.Rollback()
 	}
 
 	return nil
@@ -867,7 +867,7 @@ func (S *TicketService) HandleTriggerOrderCancelDidTask(a ITicketApp, task *orde
 		_, err = db.Exec(fmt.Sprintf("UPDATE %s%s SET status=? WHERE status=? AND orderid=?", a.GetPrefix(), a.GetTicketTable().Name), TicketStatusCancel, TicketStatusNone, task.Order.Id)
 
 		if err != nil {
-			return nil
+			return err
 		}
 
 		return nil
@@ -878,10 +878,8 @@ func (S *TicketService) HandleTriggerOrderCancelDidTask(a ITicketApp, task *orde
 	}
 
 	if err != nil {
-		err = tx.Rollback()
-		if err != nil {
-			return err
-		}
+		log.Println(err)
+		tx.Rollback()
 	}
 
 	return nil
