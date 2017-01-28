@@ -18,14 +18,16 @@ type TicketQueryTaskResult struct {
 
 type TicketQueryTask struct {
 	app.Task
-	Id        int64       `json:"id"`
-	Uid       interface{} `json:"uid"`     //用户ID
-	OrderId   interface{} `json:"orderId"` //订单ID
-	Status    string      `json:"prefix"`
-	OrderBy   string      `json:"orderBy"` // desc, asc
-	PageIndex int         `json:"p"`
-	PageSize  int         `json:"size"`
-	Counter   bool        `json:"counter"`
+	Id        int64  `json:"id"`
+	Uid       int64  `json:"uid"`     //用户ID
+	OrderId   int64  `json:"orderId"` //订单ID
+	Status    string `json:"status"`
+	StartDate int64  `json:"startDate"`
+	EndDate   int64  `json:"endDate"`
+	OrderBy   string `json:"orderBy"` // desc, asc , date
+	PageIndex int    `json:"p"`
+	PageSize  int    `json:"size"`
+	Counter   bool   `json:"counter"`
 	Result    TicketQueryTaskResult
 }
 

@@ -559,12 +559,12 @@ func (S *TicketService) HandleTicketQueryTask(a ITicketApp, task *TicketQueryTas
 		args = append(args, task.Id)
 	}
 
-	if task.Uid != nil {
+	if task.Uid != 0 {
 		sql.WriteString(" AND uid=?")
 		args = append(args, task.Uid)
 	}
 
-	if task.OrderId != nil {
+	if task.OrderId != 0 {
 		sql.WriteString(" AND orderid=?")
 		args = append(args, task.OrderId)
 	}
@@ -582,8 +582,20 @@ func (S *TicketService) HandleTicketQueryTask(a ITicketApp, task *TicketQueryTas
 		sql.WriteString(")")
 	}
 
+	if task.StartDate != 0 {
+		sql.WriteString(" AND date>=?")
+		args = append(args, task.StartDate)
+	}
+
+	if task.EndDate != 0 {
+		sql.WriteString(" AND date<?")
+		args = append(args, task.EndDate)
+	}
+
 	if task.OrderBy == "asc" {
 		sql.WriteString(" ORDER BY id ASC")
+	} else if task.OrderBy == "date" {
+		sql.WriteString(" ORDER BY date ASC")
 	} else {
 		sql.WriteString(" ORDER BY id DESC")
 	}
