@@ -137,8 +137,8 @@ func (S *RouteService) HandleRouteSetTask(a IRouteApp, task *RouteSetTask) error
 			keys["startcityid"] = true
 		}
 
-		if task.StartCityId != nil {
-			v.StartCityId = dynamic.IntValue(task.StartCityId, int64(v.StartCityId))
+		if task.EndCityId != nil {
+			v.EndCityId = dynamic.IntValue(task.EndCityId, int64(v.EndCityId))
 			keys["endcityid"] = true
 		}
 
