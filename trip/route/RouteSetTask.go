@@ -11,14 +11,16 @@ type RouteSetTaskResult struct {
 
 type RouteSetTask struct {
 	app.Task
-	Id       int64       `json:"id,string"`
-	Start    interface{} `json:"start"`    //开始名
-	End      interface{} `json:"end"`      //结束名
-	Alias    interface{} `json:"alias"`    //别名
-	Tags     interface{} `json:"tags"`     //搜索标签
-	Distance interface{} `json:"distance"` //路面距离 km
-	Status   interface{} `json:"status"`
-	Result   RouteSetTaskResult
+	Id          int64       `json:"id,string"`
+	Start       interface{} `json:"start"`    //开始名
+	End         interface{} `json:"end"`      //结束名
+	Alias       interface{} `json:"alias"`    //别名
+	Tags        interface{} `json:"tags"`     //搜索标签
+	Distance    interface{} `json:"distance"` //路面距离 km
+	Status      interface{} `json:"status"`
+	StartCityId interface{} `json:"startCityId"` //开始城市ID
+	EndCityId   interface{} `json:"endCityId"`   //结束城市ID
+	Result      RouteSetTaskResult
 }
 
 func (task *RouteSetTask) GetResult() interface{} {

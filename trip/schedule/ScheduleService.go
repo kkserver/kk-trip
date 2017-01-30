@@ -185,7 +185,7 @@ func (S *ScheduleService) HandleScheduleBatchSetTask(a IScheduleApp, task *Sched
 
 				v := Schedule{}
 
-				rows, err := kk.DBQuery(db, a.GetScheduleTable(), a.GetPrefix(), " WHERE lineid=? AND date=?", lineId, date.Unix())
+				rows, err := kk.DBQuery(tx, a.GetScheduleTable(), a.GetPrefix(), " WHERE lineid=? AND date=?", lineId, date.Unix())
 
 				if err != nil {
 					return err
@@ -210,7 +210,7 @@ func (S *ScheduleService) HandleScheduleBatchSetTask(a IScheduleApp, task *Sched
 					v.MaxCount = task.MaxCount
 					v.UMaxCount = task.UMaxCount
 
-					_, err = kk.DBUpdate(db, a.GetScheduleTable(), a.GetPrefix(), &v)
+					_, err = kk.DBUpdate(tx, a.GetScheduleTable(), a.GetPrefix(), &v)
 
 					if err != nil {
 						return err
@@ -229,7 +229,7 @@ func (S *ScheduleService) HandleScheduleBatchSetTask(a IScheduleApp, task *Sched
 						v.Status = ScheduleStatusIn
 					}
 
-					_, err = kk.DBInsert(db, a.GetScheduleTable(), a.GetPrefix(), &v)
+					_, err = kk.DBInsert(tx, a.GetScheduleTable(), a.GetPrefix(), &v)
 
 					if err != nil {
 						return err

@@ -15,14 +15,16 @@ const RouteDirectionBack = 1 //返程
  * 路线
  */
 type Route struct {
-	Id       int64   `json:"id"`
-	Start    string  `json:"start"`    //开始名
-	End      string  `json:"end"`      //结束名
-	Alias    string  `json:"alias"`    //别名
-	Tags     string  `json:"tags"`     //搜索标签
-	Distance float64 `json:"distance"` //路面距离 km
-	Status   int     `json:"status"`   //状态
-	Ctime    int64   `json:"ctime"`
+	Id          int64   `json:"id"`
+	Start       string  `json:"start"`       //开始名
+	End         string  `json:"end"`         //结束名
+	Alias       string  `json:"alias"`       //别名
+	Tags        string  `json:"tags"`        //搜索标签
+	Distance    float64 `json:"distance"`    //路面距离 km
+	Status      int     `json:"status"`      //状态
+	StartCityId int64   `json:"startCityId"` //开始城市ID
+	EndCityId   int64   `json:"endCityId"`   //结束城市ID
+	Ctime       int64   `json:"ctime"`
 }
 
 const RouteStopTypeNone = 0

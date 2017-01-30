@@ -11,12 +11,14 @@ type RouteCreateTaskResult struct {
 
 type RouteCreateTask struct {
 	app.Task
-	Start    string  `json:"start"`    //开始名
-	End      string  `json:"end"`      //结束名
-	Alias    string  `json:"alias"`    //别名
-	Tags     string  `json:"tags"`     //搜索标签
-	Distance float64 `json:"distance"` //路面距离 km
-	Result   RouteCreateTaskResult
+	Start       string  `json:"start"`       //开始名
+	End         string  `json:"end"`         //结束名
+	Alias       string  `json:"alias"`       //别名
+	Tags        string  `json:"tags"`        //搜索标签
+	Distance    float64 `json:"distance"`    //路面距离 km
+	StartCityId int64   `json:"startCityId"` //开始城市ID
+	EndCityId   int64   `json:"endCityId"`   //结束城市ID
+	Result      RouteCreateTaskResult
 }
 
 func (task *RouteCreateTask) GetResult() interface{} {

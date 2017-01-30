@@ -44,6 +44,8 @@ func (S *RouteService) HandleRouteCreateTask(a IRouteApp, task *RouteCreateTask)
 	v.End = task.End
 	v.Distance = task.Distance
 	v.Tags = task.Tags
+	v.StartCityId = task.StartCityId
+	v.EndCityId = task.EndCityId
 	v.Ctime = time.Now().Unix()
 
 	_, err = kk.DBInsert(db, a.GetRouteTable(), a.GetPrefix(), &v)
@@ -98,31 +100,49 @@ func (S *RouteService) HandleRouteSetTask(a IRouteApp, task *RouteSetTask) error
 			return nil
 		}
 
+		keys := map[string]bool{}
+
 		if task.Start != nil {
 			v.Start = dynamic.StringValue(task.Start, v.Start)
+			keys["start"] = true
 		}
 
 		if task.End != nil {
 			v.End = dynamic.StringValue(task.End, v.End)
+			keys["end"] = true
 		}
 
 		if task.Alias != nil {
 			v.Alias = dynamic.StringValue(task.Alias, v.Alias)
+			keys["alias"] = true
 		}
 
 		if task.Tags != nil {
 			v.Tags = dynamic.StringValue(task.Tags, v.Tags)
+			keys["tags"] = true
 		}
 
 		if task.Distance != nil {
 			v.Distance = dynamic.FloatValue(task.Distance, v.Distance)
+			keys["distance"] = true
 		}
 
 		if task.Status != nil {
 			v.Status = int(dynamic.IntValue(task.Status, int64(v.Status)))
+			keys["status"] = true
 		}
 
-		_, err = kk.DBUpdate(db, a.GetRouteTable(), a.GetPrefix(), &v)
+		if task.StartCityId != nil {
+			v.StartCityId = dynamic.IntValue(task.StartCityId, int64(v.StartCityId))
+			keys["startcityid"] = true
+		}
+
+		if task.StartCityId != nil {
+			v.StartCityId = dynamic.IntValue(task.StartCityId, int64(v.StartCityId))
+			keys["endcityid"] = true
+		}
+
+		_, err = kk.DBUpdateWithKeys(db, a.GetRouteTable(), a.GetPrefix(), &v, keys)
 
 		if err != nil {
 			task.Result.Errno = ERROR_ROUTE

@@ -327,7 +327,7 @@ func (S *TicketService) HandleTicketCreateTask(a ITicketApp, task *TicketCreateT
 				}
 			}
 
-			rows, err := kk.DBQuery(db, a.GetScheduleTable(), a.GetPrefix(), " WHERE lineid=? AND date=? FOR UPDATE", lineId, date)
+			rows, err := kk.DBQuery(tx, a.GetScheduleTable(), a.GetPrefix(), " WHERE lineid=? AND date=? FOR UPDATE", lineId, date)
 
 			if err != nil {
 				return nil, err
@@ -366,7 +366,7 @@ func (S *TicketService) HandleTicketCreateTask(a ITicketApp, task *TicketCreateT
 				return app.NewError(ERROR_TICKET_SCHEDULE_MAX_COUNT, "No tickets available")
 			}
 
-			count, err := kk.DBQueryCount(db, a.GetTicketTable(), a.GetPrefix(), " WHERE scheduleid=? AND uid=? AND status IN (?,?)", v.Id, task.Uid, TicketStatusNone, TicketStatusPay)
+			count, err := kk.DBQueryCount(tx, a.GetTicketTable(), a.GetPrefix(), " WHERE scheduleid=? AND uid=? AND status IN (?,?)", v.Id, task.Uid, TicketStatusNone, TicketStatusPay)
 
 			if count >= v.UMaxCount {
 				return app.NewError(ERROR_TICKET_SCHEDULE_USER_MAX_COUNT, "No tickets available")
@@ -376,7 +376,7 @@ func (S *TicketService) HandleTicketCreateTask(a ITicketApp, task *TicketCreateT
 				item.SeatNo = fmt.Sprintf("%d", v.Count+1)
 			}
 
-			count, err = kk.DBQueryCount(db, a.GetTicketTable(), a.GetPrefix(), " WHERE scheduleid=? AND seatno=? AND status IN (?,?)", v.Id, item.SeatNo, TicketStatusNone, TicketStatusPay)
+			count, err = kk.DBQueryCount(tx, a.GetTicketTable(), a.GetPrefix(), " WHERE scheduleid=? AND seatno=? AND status IN (?,?)", v.Id, item.SeatNo, TicketStatusNone, TicketStatusPay)
 
 			if count > 0 {
 				return app.NewError(ERROR_TICKET_SCHEDULE_SEATNO, "Seat number already exists")
@@ -394,7 +394,7 @@ func (S *TicketService) HandleTicketCreateTask(a ITicketApp, task *TicketCreateT
 			vv.RefundValue = values[i].RefundValue
 			vv.Ctime = time.Now().Unix()
 
-			_, err = kk.DBInsert(db, a.GetTicketTable(), a.GetPrefix(), &vv)
+			_, err = kk.DBInsert(tx, a.GetTicketTable(), a.GetPrefix(), &vv)
 
 			if err != nil {
 				return err
@@ -409,7 +409,7 @@ func (S *TicketService) HandleTicketCreateTask(a ITicketApp, task *TicketCreateT
 
 		for _, schedule := range schedules {
 
-			_, err = kk.DBUpdateWithKeys(db, a.GetScheduleTable(), a.GetPrefix(), schedule, keys)
+			_, err = kk.DBUpdateWithKeys(tx, a.GetScheduleTable(), a.GetPrefix(), schedule, keys)
 
 			if err != nil {
 				return err
@@ -690,7 +690,7 @@ func (S *TicketService) HandleTicketRefundTask(a ITicketApp, task *TicketRefundT
 
 	err = func() error {
 
-		rows, err := kk.DBQuery(db, a.GetTicketTable(), a.GetPrefix(), " WHERE id=? FOR UPDATE", task.Id)
+		rows, err := kk.DBQuery(tx, a.GetTicketTable(), a.GetPrefix(), " WHERE id=? FOR UPDATE", task.Id)
 
 		if err != nil {
 			return err
@@ -714,7 +714,7 @@ func (S *TicketService) HandleTicketRefundTask(a ITicketApp, task *TicketRefundT
 
 			v.Status = TicketStatusRefund
 
-			_, err = kk.DBUpdateWithKeys(db, a.GetTicketTable(), a.GetPrefix(), &v, map[string]bool{"status": true})
+			_, err = kk.DBUpdateWithKeys(tx, a.GetTicketTable(), a.GetPrefix(), &v, map[string]bool{"status": true})
 
 			if err != nil {
 				return err
@@ -768,7 +768,7 @@ func (S *TicketService) HandleTriggerOrderTimeoutDidTask(a ITicketApp, task *ord
 
 	err = func() error {
 
-		rows, err := db.Query(fmt.Sprintf("SELECT scheduleid, COUNT(id) FROM %s%s WHERE orderid=? AND status=? GROUP BY scheduleid", a.GetPrefix(), a.GetTicketTable().Name), task.Order.Id, TicketStatusNone)
+		rows, err := tx.Query(fmt.Sprintf("SELECT scheduleid, COUNT(id) FROM %s%s WHERE orderid=? AND status=? GROUP BY scheduleid", a.GetPrefix(), a.GetTicketTable().Name), task.Order.Id, TicketStatusNone)
 
 		if err != nil {
 			return err
@@ -789,13 +789,13 @@ func (S *TicketService) HandleTriggerOrderTimeoutDidTask(a ITicketApp, task *ord
 
 			log.Println(id, count)
 
-			_, err = db.Exec(fmt.Sprintf("UPDATE %s%s SET `count` = `count` - ? WHERE id=?", a.GetPrefix(), a.GetScheduleTable().Name), count, id)
+			_, err = tx.Exec(fmt.Sprintf("UPDATE %s%s SET `count` = `count` - ? WHERE id=?", a.GetPrefix(), a.GetScheduleTable().Name), count, id)
 			if err != nil {
 				return err
 			}
 		}
 
-		_, err = db.Exec(fmt.Sprintf("UPDATE %s%s SET status=? WHERE status=? AND orderid=?", a.GetPrefix(), a.GetTicketTable().Name), TicketStatusTimeout, TicketStatusNone, task.Order.Id)
+		_, err = tx.Exec(fmt.Sprintf("UPDATE %s%s SET status=? WHERE status=? AND orderid=?", a.GetPrefix(), a.GetTicketTable().Name), TicketStatusTimeout, TicketStatusNone, task.Order.Id)
 
 		if err != nil {
 			return err
@@ -851,7 +851,7 @@ func (S *TicketService) HandleTriggerOrderCancelDidTask(a ITicketApp, task *orde
 
 	err = func() error {
 
-		rows, err := db.Query(fmt.Sprintf("SELECT scheduleid, COUNT(id) FROM %s%s WHERE orderid=? AND status=? GROUP BY scheduleid", a.GetPrefix(), a.GetTicketTable().Name), task.Order.Id, TicketStatusNone)
+		rows, err := tx.Query(fmt.Sprintf("SELECT scheduleid, COUNT(id) FROM %s%s WHERE orderid=? AND status=? GROUP BY scheduleid", a.GetPrefix(), a.GetTicketTable().Name), task.Order.Id, TicketStatusNone)
 
 		if err != nil {
 			return err
@@ -870,13 +870,13 @@ func (S *TicketService) HandleTriggerOrderCancelDidTask(a ITicketApp, task *orde
 
 			log.Println(id, count)
 
-			_, err = db.Exec(fmt.Sprintf("UPDATE %s%s SET `count` = `count` - ? WHERE id=?", a.GetPrefix(), a.GetScheduleTable().Name), count, id)
+			_, err = tx.Exec(fmt.Sprintf("UPDATE %s%s SET `count` = `count` - ? WHERE id=?", a.GetPrefix(), a.GetScheduleTable().Name), count, id)
 			if err != nil {
 				return err
 			}
 		}
 
-		_, err = db.Exec(fmt.Sprintf("UPDATE %s%s SET status=? WHERE status=? AND orderid=?", a.GetPrefix(), a.GetTicketTable().Name), TicketStatusCancel, TicketStatusNone, task.Order.Id)
+		_, err = tx.Exec(fmt.Sprintf("UPDATE %s%s SET status=? WHERE status=? AND orderid=?", a.GetPrefix(), a.GetTicketTable().Name), TicketStatusCancel, TicketStatusNone, task.Order.Id)
 
 		if err != nil {
 			return err
