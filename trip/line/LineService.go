@@ -326,6 +326,34 @@ func (S *LineService) HandleLineQueryTask(a ILineApp, task *LineQueryTask) error
 			args = append(args, q, task.Keyword, q, q, q, q, q)
 		}
 
+		if task.CityIds != "" {
+			vs := strings.Split(task.Status, ",")
+			sql.WriteString(" AND (r.startcityid IN (")
+			for i, v := range vs {
+				if i != 0 {
+					sql.WriteString(",")
+				}
+				sql.WriteString("?")
+				args = append(args, v)
+			}
+			sql.WriteString(")")
+			sql.WriteString(" OR r.endcityid IN (")
+			for i, v := range vs {
+				if i != 0 {
+					sql.WriteString(",")
+				}
+				sql.WriteString("?")
+				args = append(args, v)
+			}
+			sql.WriteString(") )")
+		}
+
+		if task.CityPrefix != "" {
+			sql.WriteString(" AND (startcitypath LIKE ? OR endcitypath LIKE ?)")
+			q := task.CityPrefix + "%"
+			args = append(args, q, q)
+		}
+
 		if task.Status != "" {
 			vs := strings.Split(task.Status, ",")
 			sql.WriteString(" AND v.status IN (")

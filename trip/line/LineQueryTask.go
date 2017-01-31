@@ -19,16 +19,18 @@ type LineQueryTaskResult struct {
 
 type LineQueryTask struct {
 	app.Task
-	Id        int64  `json:"id,string"`
-	Status    string `json:"status"`
-	Keyword   string `json:"q"`
-	Direction string `json:"direction"` //方向
-	RouteId   int64  `json:"routeId"`
-	OrderBy   string `json:"orderBy"` // desc, asc
-	PageIndex int    `json:"p"`
-	PageSize  int    `json:"size"`
-	Counter   bool   `json:"counter"`
-	Result    LineQueryTaskResult
+	Id         int64  `json:"id,string"`
+	Status     string `json:"status"`
+	Keyword    string `json:"q"`
+	Direction  string `json:"direction"` //方向
+	RouteId    int64  `json:"routeId"`
+	CityIds    string `json:"cityIds"`
+	CityPrefix string `json:"cityPrefix"`
+	OrderBy    string `json:"orderBy"` // desc, asc
+	PageIndex  int    `json:"p"`
+	PageSize   int    `json:"size"`
+	Counter    bool   `json:"counter"`
+	Result     LineQueryTaskResult
 }
 
 func (T *LineQueryTask) GetResult() interface{} {

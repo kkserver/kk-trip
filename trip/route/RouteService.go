@@ -45,7 +45,9 @@ func (S *RouteService) HandleRouteCreateTask(a IRouteApp, task *RouteCreateTask)
 	v.Distance = task.Distance
 	v.Tags = task.Tags
 	v.StartCityId = task.StartCityId
+	v.StartCityPath = task.StartCityPath
 	v.EndCityId = task.EndCityId
+	v.EndCityPath = task.EndCityPath
 	v.Ctime = time.Now().Unix()
 
 	_, err = kk.DBInsert(db, a.GetRouteTable(), a.GetPrefix(), &v)
@@ -137,9 +139,19 @@ func (S *RouteService) HandleRouteSetTask(a IRouteApp, task *RouteSetTask) error
 			keys["startcityid"] = true
 		}
 
+		if task.StartCityPath != nil {
+			v.StartCityPath = dynamic.StringValue(task.StartCityPath, v.StartCityPath)
+			keys["startcitypath"] = true
+		}
+
 		if task.EndCityId != nil {
 			v.EndCityId = dynamic.IntValue(task.EndCityId, int64(v.EndCityId))
 			keys["endcityid"] = true
+		}
+
+		if task.EndCityPath != nil {
+			v.EndCityPath = dynamic.StringValue(task.EndCityPath, v.EndCityPath)
+			keys["endcitypath"] = true
 		}
 
 		_, err = kk.DBUpdateWithKeys(db, a.GetRouteTable(), a.GetPrefix(), &v, keys)
