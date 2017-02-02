@@ -45,6 +45,8 @@ type RouteStop struct {
 	Latitude  float64 `json:"latitude"`  //纬度
 	Type      int     `json:"type"`      //站点类型
 	Direction int     `json:"direction"` //方向
+	Body      string  `json:"body"`      //站点描述
+	Images    string  `json:"images"`    //站点图片
 	Ctime     int64   `json:"ctime"`     //创建时间
 }
 

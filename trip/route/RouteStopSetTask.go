@@ -15,6 +15,8 @@ type RouteStopSetTask struct {
 	Title     interface{} `json:"title"`     //站点备注名
 	Longitude interface{} `json:"longitude"` //经度
 	Latitude  interface{} `json:"latitude"`  //纬度
+	Body      interface{} `json:"body"`      //站点描述
+	Images    interface{} `json:"images"`    //站点图片
 	Result    RouteStopSetTaskResult
 }
 

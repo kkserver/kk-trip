@@ -16,6 +16,7 @@ type RouteStopService struct {
 	app.Service
 	Create   *RouteStopCreateTask
 	Set      *RouteStopSetTask
+	Get      *RouteStopTask
 	Remove   *RouteStopRemoveTask
 	Query    *RouteStopQueryTask
 	Exchange *RouteStopExchangeTask
@@ -44,6 +45,8 @@ func (S *RouteStopService) HandleRouteStopCreateTask(a IRouteApp, task *RouteSto
 	v.Latitude = task.Latitude
 	v.Longitude = task.Longitude
 	v.RouteId = task.RouteId
+	v.Body = task.Body
+	v.Images = task.Images
 	v.Ctime = time.Now().Unix()
 
 	{
@@ -158,6 +161,14 @@ func (S *RouteStopService) HandleRouteStopSetTask(a IRouteApp, task *RouteStopSe
 
 		}
 
+		if task.Body != nil {
+			v.Body = dynamic.StringValue(task.Body, v.Body)
+		}
+
+		if task.Images != nil {
+			v.Images = dynamic.StringValue(task.Images, v.Images)
+		}
+
 		_, err = kk.DBUpdate(db, a.GetRouteStopTable(), a.GetPrefix(), &v)
 
 		if err != nil {
@@ -171,6 +182,55 @@ func (S *RouteStopService) HandleRouteStopSetTask(a IRouteApp, task *RouteStopSe
 	} else {
 		task.Result.Errno = ERROR_ROUTE_NOT_FOUND_ROUTE
 		task.Result.Errmsg = "Not found route"
+	}
+
+	return nil
+}
+
+func (S *RouteStopService) HandleRouteStopTask(a IRouteApp, task *RouteStopTask) error {
+
+	if task.Id == 0 {
+		task.Result.Errno = ERROR_ROUTE_NOT_FOUND_ID
+		task.Result.Errmsg = "Not found id"
+		return nil
+	}
+
+	var db, err = a.GetDB()
+
+	if err != nil {
+		task.Result.Errno = ERROR_ROUTE
+		task.Result.Errmsg = err.Error()
+		return nil
+	}
+
+	var v = RouteStop{}
+	var scanner = kk.NewDBScaner(&v)
+
+	rows, err := kk.DBQuery(db, a.GetRouteStopTable(), a.GetPrefix(), " WHERE id=?", task.Id)
+
+	if err != nil {
+		task.Result.Errno = ERROR_ROUTE
+		task.Result.Errmsg = err.Error()
+		return nil
+	}
+
+	defer rows.Close()
+
+	if rows.Next() {
+
+		err = scanner.Scan(rows)
+
+		if err != nil {
+			task.Result.Errno = ERROR_ROUTE
+			task.Result.Errmsg = err.Error()
+			return nil
+		}
+
+		task.Result.Stop = &v
+
+	} else {
+		task.Result.Errno = ERROR_ROUTE_NOT_FOUND_ROUTE
+		task.Result.Errmsg = "Not found route stop"
 	}
 
 	return nil
