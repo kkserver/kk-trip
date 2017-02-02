@@ -49,7 +49,7 @@ func LineTimeSliceFromString(value string) LineTimeSlice {
 
 	v := LineTimeSlice{}
 
-	for _, vv := range strings.Split(value, ",") {
+	for _, vv := range strings.Split(value, " ") {
 		v = append(v, LineTimeFromString(vv))
 	}
 
