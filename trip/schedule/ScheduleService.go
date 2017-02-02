@@ -185,7 +185,7 @@ func (S *ScheduleService) HandleScheduleBatchSetTask(a IScheduleApp, task *Sched
 
 				v := Schedule{}
 
-				rows, err := kk.DBQuery(tx, a.GetScheduleTable(), a.GetPrefix(), " WHERE lineid=? AND date=?", lineId, date.Unix())
+				rows, err := kk.DBQuery(db, a.GetScheduleTable(), a.GetPrefix(), " WHERE lineid=? AND date=?", lineId, date.Unix())
 
 				if err != nil {
 					return err

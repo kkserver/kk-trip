@@ -281,14 +281,6 @@ func (S *TicketService) HandleTicketCreateTask(a ITicketApp, task *TicketCreateT
 		}
 	}
 
-	tx, err := db.Begin()
-
-	if err != nil {
-		task.Result.Errno = ERROR_TICKET
-		task.Result.Errmsg = err.Error()
-		return nil
-	}
-
 	var odr *order.Order = nil
 
 	if task.Expires == 0 {
@@ -313,6 +305,14 @@ func (S *TicketService) HandleTicketCreateTask(a ITicketApp, task *TicketCreateT
 			task.Result.Errmsg = "Can not create order"
 			return nil
 		}
+	}
+
+	tx, err := db.Begin()
+
+	if err != nil {
+		task.Result.Errno = ERROR_TICKET
+		task.Result.Errmsg = err.Error()
+		return nil
 	}
 
 	err = func() error {
@@ -768,7 +768,7 @@ func (S *TicketService) HandleTriggerOrderTimeoutDidTask(a ITicketApp, task *ord
 
 	err = func() error {
 
-		rows, err := tx.Query(fmt.Sprintf("SELECT scheduleid, COUNT(id) FROM %s%s WHERE orderid=? AND status=? GROUP BY scheduleid", a.GetPrefix(), a.GetTicketTable().Name), task.Order.Id, TicketStatusNone)
+		rows, err := db.Query(fmt.Sprintf("SELECT scheduleid, COUNT(id) FROM %s%s WHERE orderid=? AND status=? GROUP BY scheduleid", a.GetPrefix(), a.GetTicketTable().Name), task.Order.Id, TicketStatusNone)
 
 		if err != nil {
 			return err
@@ -851,7 +851,7 @@ func (S *TicketService) HandleTriggerOrderCancelDidTask(a ITicketApp, task *orde
 
 	err = func() error {
 
-		rows, err := tx.Query(fmt.Sprintf("SELECT scheduleid, COUNT(id) FROM %s%s WHERE orderid=? AND status=? GROUP BY scheduleid", a.GetPrefix(), a.GetTicketTable().Name), task.Order.Id, TicketStatusNone)
+		rows, err := db.Query(fmt.Sprintf("SELECT scheduleid, COUNT(id) FROM %s%s WHERE orderid=? AND status=? GROUP BY scheduleid", a.GetPrefix(), a.GetTicketTable().Name), task.Order.Id, TicketStatusNone)
 
 		if err != nil {
 			return err
