@@ -205,38 +205,47 @@ func (S *CarService) HandleCarSetTask(a ICarApp, task *CarSetTask) error {
 
 		if task.PlateNo != nil {
 
-			count, err := kk.DBQueryCount(db, a.GetCarTable(), a.GetPrefix(), " WHERE plateno=? AND id <> ?", task.PlateNo, v.Id)
-
-			if err != nil {
-				task.Result.Errno = ERROR_CAR
-				task.Result.Errmsg = err.Error()
-				return nil
-			}
-			if count > 0 {
-				task.Result.Errno = ERROR_CAR_PLATENO
-				task.Result.Errmsg = "Plate noalready exists"
-				return nil
-			}
-
 			v.PlateNo = dynamic.StringValue(task.PlateNo, v.PlateNo)
+
+			if v.PlateNo != "" {
+
+				count, err := kk.DBQueryCount(db, a.GetCarTable(), a.GetPrefix(), " WHERE plateno=? AND id <> ?", v.PlateNo, v.Id)
+
+				if err != nil {
+					task.Result.Errno = ERROR_CAR
+					task.Result.Errmsg = err.Error()
+					return nil
+				}
+				if count > 0 {
+					task.Result.Errno = ERROR_CAR_PLATENO
+					task.Result.Errmsg = "Plate noalready exists"
+					return nil
+				}
+
+			}
+
 			keys["plateno"] = true
 		}
 
 		if task.LicenceCode != nil {
 
-			count, err := kk.DBQueryCount(db, a.GetCarTable(), a.GetPrefix(), " WHERE licencecode=? AND id <> ?", task.LicenceCode, v.Id)
-			if err != nil {
-				task.Result.Errno = ERROR_CAR
-				task.Result.Errmsg = err.Error()
-				return nil
-			}
-			if count > 0 {
-				task.Result.Errno = ERROR_CAR_LICENCE_CODE
-				task.Result.Errmsg = "Licence code already exists"
-				return nil
+			v.LicenceCode = dynamic.StringValue(task.LicenceCode, v.LicenceCode)
+
+			if v.LicenceCode != "" {
+				count, err := kk.DBQueryCount(db, a.GetCarTable(), a.GetPrefix(), " WHERE licencecode=? AND id <> ?", v.LicenceCode, v.Id)
+				if err != nil {
+					task.Result.Errno = ERROR_CAR
+					task.Result.Errmsg = err.Error()
+					return nil
+				}
+				if count > 0 {
+					task.Result.Errno = ERROR_CAR_LICENCE_CODE
+					task.Result.Errmsg = "Licence code already exists"
+					return nil
+				}
+
 			}
 
-			v.LicenceCode = dynamic.StringValue(task.LicenceCode, v.LicenceCode)
 			keys["licencecode"] = true
 		}
 
