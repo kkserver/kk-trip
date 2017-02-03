@@ -24,7 +24,11 @@ type Line struct {
 	Status    int    `json:"status"`         //状态
 	Direction int    `json:"direction"`      //方向
 	Times     string `json:"times"`          //站点时间
-	Ctime     int64  `json:"ctime"`
+
+	CarId    int64 `json:"carId"`    //车辆ID
+	DriverId int64 `json:"driverId"` //司机ID
+
+	Ctime int64 `json:"ctime"`
 }
 
 type LineTime int64

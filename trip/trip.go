@@ -6,6 +6,8 @@ import (
 	"github.com/kkserver/kk-lib/kk/app"
 	"github.com/kkserver/kk-lib/kk/app/remote"
 	"github.com/kkserver/kk-order/order"
+	"github.com/kkserver/kk-trip/trip/car"
+	"github.com/kkserver/kk-trip/trip/driver"
 	"github.com/kkserver/kk-trip/trip/line"
 	"github.com/kkserver/kk-trip/trip/route"
 	"github.com/kkserver/kk-trip/trip/schedule"
@@ -37,6 +39,12 @@ type TripApp struct {
 
 	Ticket      *ticket.TicketService
 	TicketTable kk.DBTable
+
+	Driver      *driver.DriverService
+	DriverTable kk.DBTable
+
+	Car      *car.CarService
+	CarTable kk.DBTable
 
 	Suggest *suggest.SuggestService
 
@@ -77,4 +85,12 @@ func (A *TripApp) GetOrderTable() *kk.DBTable {
 
 func (A *TripApp) GetTicketTable() *kk.DBTable {
 	return &A.TicketTable
+}
+
+func (A *TripApp) GetDriverTable() *kk.DBTable {
+	return &A.DriverTable
+}
+
+func (A *TripApp) GetCarTable() *kk.DBTable {
+	return &A.CarTable
 }

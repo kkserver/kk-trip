@@ -17,7 +17,11 @@ type LineSetTask struct {
 	Direction interface{} `json:"direction"` //方向
 	Times     interface{} `json:"times"`     //站点时间 09:00,09:20
 	Status    interface{} `json:"status"`
-	Result    LineSetTaskResult
+
+	CarId    interface{} `json:"carId"`    //车辆ID
+	DriverId interface{} `json:"driverId"` //司机ID
+
+	Result LineSetTaskResult
 }
 
 func (task *LineSetTask) GetResult() interface{} {

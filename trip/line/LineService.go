@@ -43,6 +43,8 @@ func (S *LineService) HandleLineCreateTask(a ILineApp, task *LineCreateTask) err
 	v.Direction = task.Direction
 	v.Price = task.Price
 	v.Times = task.Times
+	v.CarId = task.CarId
+	v.DriverId = task.DriverId
 
 	ts := LineTimeSliceFromString(task.Times)
 
@@ -126,6 +128,14 @@ func (S *LineService) HandleLineSetTask(a ILineApp, task *LineSetTask) error {
 
 		if task.Status != nil {
 			v.Status = int(dynamic.IntValue(task.Status, int64(v.Status)))
+		}
+
+		if task.CarId != nil {
+			v.CarId = dynamic.IntValue(task.CarId, v.CarId)
+		}
+
+		if task.DriverId != nil {
+			v.DriverId = dynamic.IntValue(task.DriverId, v.DriverId)
 		}
 
 		_, err = kk.DBUpdate(db, a.GetLineTable(), a.GetPrefix(), &v)

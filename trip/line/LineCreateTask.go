@@ -16,7 +16,11 @@ type LineCreateTask struct {
 	Alias     string `json:"alias"`          //别名
 	Direction int    `json:"direction"`      //方向
 	Times     string `json:"times"`          //站点时间 09:00,09:20
-	Result    LineCreateTaskResult
+
+	CarId    int64 `json:"carId"`    //车辆ID
+	DriverId int64 `json:"driverId"` //司机ID
+
+	Result LineCreateTaskResult
 }
 
 func (task *LineCreateTask) GetResult() interface{} {
