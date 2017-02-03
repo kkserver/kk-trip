@@ -12,7 +12,7 @@ type DriverTaskResult struct {
 type DriverTask struct {
 	app.Task
 	Id          int64  `json:"id"`
-	Phone       string `json:"string"`      //手机号	唯一
+	Phone       string `json:"phone"`       //手机号	唯一
 	Code        string `json:"code"`        //身份证	唯一
 	LicenceCode string `json:"licenceCode"` //驾驶证 唯一
 	Result      DriverTaskResult
