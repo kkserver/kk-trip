@@ -11,8 +11,10 @@ type TicketRefundTaskResult struct {
 
 type TicketRefundTask struct {
 	app.Task
-	Id     int64 `json:"id"`
-	Result TicketRefundTaskResult
+	Id            int64  `json:"id"`
+	RefundType    string `json:"refundType"`    //退款类型
+	RefundTradeNo string `json:"refundTradeNo"` //退款订单号
+	Result        TicketRefundTaskResult
 }
 
 func (task *TicketRefundTask) GetResult() interface{} {

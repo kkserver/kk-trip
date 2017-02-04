@@ -16,18 +16,20 @@ const TicketStatusRefund = 500  //已退款
  * 车票
  */
 type Ticket struct {
-	Id          int64  `json:"id,string"`
-	OrderId     int64  `json:"orderId,string"`    //订单ID
-	ScheduleId  int64  `json:"scheduleId,string"` //排期Id
-	LineId      int64  `json:"lineId,string"`     //车次ID
-	Uid         int64  `json:"uid,string"`        //用户ID
-	Date        int64  `json:"date"`              //日期
-	Status      int    `json:"status"`            //状态
-	SeatNo      string `json:"seatNo"`            //座位
-	PayValue    int64  `json:"payValue"`          //支付金额
-	RefundValue int64  `json:"refundValue"`       //退款金额
-	Value       int64  `json:"value"`             //金额
-	Ctime       int64  `json:"ctime"`
+	Id            int64  `json:"id,string"`
+	OrderId       int64  `json:"orderId,string"`    //订单ID
+	ScheduleId    int64  `json:"scheduleId,string"` //排期Id
+	LineId        int64  `json:"lineId,string"`     //车次ID
+	Uid           int64  `json:"uid,string"`        //用户ID
+	Date          int64  `json:"date"`              //日期
+	Status        int    `json:"status"`            //状态
+	SeatNo        string `json:"seatNo"`            //座位
+	PayValue      int64  `json:"payValue"`          //支付金额
+	RefundValue   int64  `json:"refundValue"`       //退款金额
+	Value         int64  `json:"value"`             //金额
+	RefundType    string `json:"refundType"`        //退款类型
+	RefundTradeNo string `json:"refundTradeNo"`     //退款订单号
+	Ctime         int64  `json:"ctime"`
 }
 
 type TicketItem struct {

@@ -615,16 +615,16 @@ func (S *TicketService) HandleTicketQueryTask(a ITicketApp, task *TicketQueryTas
 		var counter = TicketQueryCounter{}
 		counter.PageIndex = pageIndex
 		counter.PageSize = pageSize
-		total, err := kk.DBQueryCount(db, a.GetTicketTable(), a.GetPrefix(), sql.String(), args...)
+		counter.RowCount, err = kk.DBQueryCount(db, a.GetTicketTable(), a.GetPrefix(), sql.String(), args...)
 		if err != nil {
 			task.Result.Errno = ERROR_TICKET
 			task.Result.Errmsg = err.Error()
 			return nil
 		}
-		if total%pageSize == 0 {
-			counter.PageCount = total / pageSize
+		if counter.RowCount%pageSize == 0 {
+			counter.PageCount = counter.RowCount / pageSize
 		} else {
-			counter.PageCount = total/pageSize + 1
+			counter.PageCount = counter.RowCount/pageSize + 1
 		}
 		task.Result.Counter = &counter
 	}
@@ -696,13 +696,13 @@ func (S *TicketService) HandleTicketRefundTask(a ITicketApp, task *TicketRefundT
 			return err
 		}
 
-		defer rows.Close()
-
 		if rows.Next() {
 
 			scanner := kk.NewDBScaner(&v)
 
 			err = scanner.Scan(rows)
+
+			rows.Close()
 
 			if err != nil {
 				return err
@@ -713,14 +713,23 @@ func (S *TicketService) HandleTicketRefundTask(a ITicketApp, task *TicketRefundT
 			}
 
 			v.Status = TicketStatusRefund
+			v.RefundType = task.RefundType
+			v.RefundTradeNo = task.RefundTradeNo
 
-			_, err = kk.DBUpdateWithKeys(tx, a.GetTicketTable(), a.GetPrefix(), &v, map[string]bool{"status": true})
+			_, err = kk.DBUpdateWithKeys(tx, a.GetTicketTable(), a.GetPrefix(), &v, map[string]bool{"status": true, "refundtype": true, "refundtradeno": true})
+
+			if err != nil {
+				return err
+			}
+
+			_, err = tx.Exec(fmt.Sprintf("UPDATE %s%s SET `count` = `count` - 1 WHERE id=?", a.GetPrefix(), a.GetScheduleTable().Name), v.ScheduleId)
 
 			if err != nil {
 				return err
 			}
 
 		} else {
+			rows.Close()
 			return app.NewError(ERROR_TICKET_NOT_FOUND, "Not Found Ticket")
 		}
 
