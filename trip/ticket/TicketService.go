@@ -173,14 +173,11 @@ func (S *TicketService) HandleTicketPreCreateTask(a ITicketApp, task *TicketPreC
 				return app.NewError(ERROR_TICKET_SCHEDULE_USER_MAX_COUNT, "No tickets available")
 			}
 
-			if i.SeatNo == "" {
-				i.SeatNo = fmt.Sprintf("%d", v.Count+1)
-			}
-
-			count, err = kk.DBQueryCount(db, a.GetTicketTable(), a.GetPrefix(), " WHERE scheduleid=? AND seatno=? AND status IN (?,?)", v.Id, i.SeatNo, TicketStatusNone, TicketStatusPay)
-
-			if count > 0 {
-				return app.NewError(ERROR_TICKET_SCHEDULE_SEATNO, "Seat number already exists")
+			if i.SeatNo != "" {
+				count, err = kk.DBQueryCount(db, a.GetTicketTable(), a.GetPrefix(), " WHERE scheduleid=? AND seatno=? AND status IN (?,?)", v.Id, i.SeatNo, TicketStatusNone, TicketStatusPay)
+				if count > 0 {
+					return app.NewError(ERROR_TICKET_SCHEDULE_SEATNO, "Seat number already exists")
+				}
 			}
 
 			vv := TicketValue{}
@@ -373,13 +370,42 @@ func (S *TicketService) HandleTicketCreateTask(a ITicketApp, task *TicketCreateT
 			}
 
 			if item.SeatNo == "" {
-				item.SeatNo = fmt.Sprintf("%d", v.Count+1)
-			}
 
-			count, err = kk.DBQueryCount(tx, a.GetTicketTable(), a.GetPrefix(), " WHERE scheduleid=? AND seatno=? AND status IN (?,?)", v.Id, item.SeatNo, TicketStatusNone, TicketStatusPay)
+				seatnos := map[string]bool{}
 
-			if count > 0 {
-				return app.NewError(ERROR_TICKET_SCHEDULE_SEATNO, "Seat number already exists")
+				{
+					rs, err := tx.Query(fmt.Sprintf("SELECT seatno FROM %s%s WHERE scheduleid=? AND status IN (?,?)", a.GetPrefix(), a.GetTicketTable().Name), v.Id, item.SeatNo, TicketStatusNone, TicketStatusPay)
+					if err != nil {
+						return err
+					}
+					var seatno interface{} = nil
+					for rs.Next() {
+						err = rs.Scan(&seatno)
+						if err != nil {
+							rs.Close()
+							return err
+						}
+						seatnos[dynamic.StringValue(seatno, "")] = true
+					}
+					rs.Close()
+				}
+
+				for i := 1; i <= v.MaxCount; i++ {
+					seatno := fmt.Sprintf("%d", i)
+					_, ok := seatnos[seatno]
+					if !ok {
+						item.SeatNo = seatno
+						break
+					}
+				}
+
+			} else {
+
+				count, err = kk.DBQueryCount(tx, a.GetTicketTable(), a.GetPrefix(), " WHERE scheduleid=? AND seatno=? AND status IN (?,?)", v.Id, item.SeatNo, TicketStatusNone, TicketStatusPay)
+
+				if count > 0 {
+					return app.NewError(ERROR_TICKET_SCHEDULE_SEATNO, "Seat number already exists")
+				}
 			}
 
 			vv := Ticket{}
