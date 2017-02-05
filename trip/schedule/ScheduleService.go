@@ -556,6 +556,8 @@ func (S *ScheduleService) HandleScheduleQueryTask(a IScheduleApp, task *Schedule
 
 		if task.OrderBy == "asc" {
 			sql.WriteString(" ORDER BY id ASC")
+		} else if task.OrderBy == "count" {
+			sql.WriteString(" ORDER BY count DESC,id DESC")
 		} else {
 			sql.WriteString(" ORDER BY id DESC")
 		}
