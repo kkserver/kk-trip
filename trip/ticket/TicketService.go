@@ -374,7 +374,7 @@ func (S *TicketService) HandleTicketCreateTask(a ITicketApp, task *TicketCreateT
 				seatnos := map[string]bool{}
 
 				{
-					rs, err := tx.Query(fmt.Sprintf("SELECT seatno FROM %s%s WHERE scheduleid=? AND status IN (?,?)", a.GetPrefix(), a.GetTicketTable().Name), v.Id, item.SeatNo, TicketStatusNone, TicketStatusPay)
+					rs, err := tx.Query(fmt.Sprintf("SELECT seatno FROM %s%s WHERE scheduleid=? AND status IN (?,?)", a.GetPrefix(), a.GetTicketTable().Name), v.Id, TicketStatusNone, TicketStatusPay)
 					if err != nil {
 						return err
 					}
