@@ -22,6 +22,7 @@ type TicketQueryTask struct {
 	Id        int64  `json:"id"`
 	Uid       int64  `json:"uid"`     //用户ID
 	OrderId   int64  `json:"orderId"` //订单ID
+	LineId    int64  `json:"lineId"`  //班次ID
 	Status    string `json:"status"`
 	StartDate int64  `json:"startDate"`
 	EndDate   int64  `json:"endDate"`

@@ -569,6 +569,11 @@ func (S *TicketService) HandleTicketQueryTask(a ITicketApp, task *TicketQueryTas
 		args = append(args, task.OrderId)
 	}
 
+	if task.LineId != 0 {
+		sql.WriteString(" AND lineid=?")
+		args = append(args, task.LineId)
+	}
+
 	if task.Status != "" {
 		vs := strings.Split(task.Status, ",")
 		sql.WriteString(" AND status IN (")
