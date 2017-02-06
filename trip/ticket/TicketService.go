@@ -378,14 +378,15 @@ func (S *TicketService) HandleTicketCreateTask(a ITicketApp, task *TicketCreateT
 					if err != nil {
 						return err
 					}
-					var seatno interface{} = nil
+					var seatno string = ""
+
 					for rs.Next() {
 						err = rs.Scan(&seatno)
 						if err != nil {
 							rs.Close()
 							return err
 						}
-						seatnos[dynamic.StringValue(seatno, "")] = true
+						seatnos[seatno] = true
 					}
 					rs.Close()
 				}
