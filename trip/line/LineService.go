@@ -332,8 +332,8 @@ func (S *LineService) HandleLineQueryTask(a ILineApp, task *LineQueryTask) error
 
 		if task.Keyword != "" {
 			q := "%" + task.Keyword + "%"
-			sql.WriteString(" AND ( v.alias LIKE ? OR v.id=? OR r.start LIKE ? OR r.end LIKE ? OR r.alias LIKE ? OR CONCAT(r.start,'-',r.end,r.alias) LIKE ? OR CONCAT(r.start,'-',r.end,v.alias) LIKE ?)")
-			args = append(args, q, task.Keyword, q, q, q, q, q)
+			sql.WriteString(" AND ( v.alias LIKE ? OR v.id=? OR r.start LIKE ? OR r.end LIKE ? OR r.alias LIKE ? OR CONCAT(r.start,'-',r.end,r.alias) LIKE ? OR CONCAT(r.start,'-',r.end,v.alias) LIKE ? OR r.tags LIKE ?)")
+			args = append(args, q, task.Keyword, q, q, q, q, q, q)
 		}
 
 		if task.CityIds != "" {
