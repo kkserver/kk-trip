@@ -23,6 +23,7 @@ type TicketService struct {
 	Refund    *TicketRefundTask
 	Query     *TicketQueryTask
 	Calendar  *TicketCalendarTask
+	Count     *TicketCountTask
 }
 
 func (S *TicketService) Handle(a app.IApp, task app.ITask) error {
@@ -690,6 +691,71 @@ func (S *TicketService) HandleTicketQueryTask(a ITicketApp, task *TicketQueryTas
 	}
 
 	task.Result.Tickets = tickets
+
+	return nil
+}
+
+func (S *TicketService) HandleTicketCountTask(a ITicketApp, task *TicketCountTask) error {
+
+	var db, err = a.GetDB()
+
+	if err != nil {
+		task.Result.Errno = ERROR_TICKET
+		task.Result.Errmsg = err.Error()
+		return nil
+	}
+
+	var args = []interface{}{}
+
+	var sql = bytes.NewBuffer(nil)
+
+	sql.WriteString(" WHERE 1")
+
+	if task.Uid != 0 {
+		sql.WriteString(" AND uid=?")
+		args = append(args, task.Uid)
+	}
+
+	if task.OrderId != 0 {
+		sql.WriteString(" AND orderid=?")
+		args = append(args, task.OrderId)
+	}
+
+	if task.LineId != 0 {
+		sql.WriteString(" AND lineid=?")
+		args = append(args, task.LineId)
+	}
+
+	if task.Status != "" {
+		vs := strings.Split(task.Status, ",")
+		sql.WriteString(" AND status IN (")
+		for i, v := range vs {
+			if i != 0 {
+				sql.WriteString(",")
+			}
+			sql.WriteString("?")
+			args = append(args, v)
+		}
+		sql.WriteString(")")
+	}
+
+	if task.StartDate != 0 {
+		sql.WriteString(" AND date>=?")
+		args = append(args, task.StartDate)
+	}
+
+	if task.EndDate != 0 {
+		sql.WriteString(" AND date<?")
+		args = append(args, task.EndDate)
+	}
+
+	task.Result.Count, err = kk.DBQueryCount(db, a.GetTicketTable(), a.GetPrefix(), sql.String(), args...)
+
+	if err != nil {
+		task.Result.Errno = ERROR_TICKET
+		task.Result.Errmsg = err.Error()
+		return nil
+	}
 
 	return nil
 }
