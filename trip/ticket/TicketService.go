@@ -526,7 +526,7 @@ func (S *TicketService) HandleTicketTask(a ITicketApp, task *TicketTask) error {
 	args = append(args, task.Id)
 
 	if task.Uid != nil {
-		sql.WriteString(" WHERE uid=?")
+		sql.WriteString(" AND uid=?")
 		args = append(args, task.Uid)
 	}
 
