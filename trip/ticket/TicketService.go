@@ -30,7 +30,7 @@ func (S *TicketService) Handle(a app.IApp, task app.ITask) error {
 	return app.ServiceReflectHandle(a, task, S)
 }
 
-func (S *TicketService) HandleInitTask(a ITicketApp, task *app.InitTask) error {
+func (S *TicketService) HandleRunloopTask(a ITicketApp, task *app.RunloopTask) error {
 
 	var db, err = a.GetDB()
 

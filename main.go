@@ -45,6 +45,10 @@ func main() {
 
 	app.Handle(&a, &app.InitTask{})
 
+	if a.Runloop {
+		app.Handle(&a, &app.RunloopTask{})
+	}
+
 	kk.DispatchMain()
 
 	app.Recycle(&a)

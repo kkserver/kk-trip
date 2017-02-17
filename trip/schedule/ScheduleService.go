@@ -33,7 +33,7 @@ func (S *ScheduleService) Handle(a app.IApp, task app.ITask) error {
 	return app.ServiceReflectHandle(a, task, S)
 }
 
-func (S *ScheduleService) HandleInitTask(a IScheduleApp, task *app.InitTask) error {
+func (S *ScheduleService) HandleRunloopTask(a IScheduleApp, task *app.RunloopTask) error {
 
 	var db, err = a.GetDB()
 

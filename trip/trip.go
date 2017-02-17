@@ -20,6 +20,8 @@ type TripApp struct {
 	app.App
 	DB *app.DBConfig
 
+	Runloop bool
+
 	Route          *route.RouteService
 	RouteStop      *route.RouteStopService
 	RouteTable     kk.DBTable
