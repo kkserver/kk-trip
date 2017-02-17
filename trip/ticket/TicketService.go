@@ -45,16 +45,18 @@ func (S *TicketService) HandleRunloopTask(a ITicketApp, task *app.RunloopTask) e
 			_, err := db.Query(fmt.Sprintf("UPDATE %s%s as t INNER JOIN %s%s as l ON t.lineid=l.id SET t.instatus=300 WHERE ? > t.date + l.time + 1800", a.GetPrefix(), a.GetTicketTable().Name, a.GetPrefix(), a.GetLineTable().Name), time.Now().Unix())
 
 			if err != nil {
-				log.Println("TicketService", err.Error())
+				log.Println("TicketService", "Runloop", "Fail", err.Error())
 			}
 
-			log.Println("TicketService", "InStatus", "Refresh")
+			log.Println("TicketService", "Runloop", "OK")
 
-			time.Sleep(30 * time.Second)
+			time.Sleep(10 * time.Second)
 
 		}
 
 	}()
+
+	log.Println("TicketService", "Runloop", "End")
 
 	return nil
 }
