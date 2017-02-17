@@ -54,6 +54,12 @@ func (S *ScheduleService) HandleInitTask(a IScheduleApp, task *app.InitTask) err
 				log.Println("ScheduleService", err.Error())
 			}
 
+			_, err = db.Exec(fmt.Sprintf("UPDATE %s%s as s INNER JOIN %s%s as l ON s.lineid=l.id SET s.status=? WHERE ? > s.date + l.time AND s.status=?", a.GetPrefix(), a.GetScheduleTable().Name, a.GetPrefix(), a.GetLineTable().Name), ScheduleStatusStart, time.Now().Unix(), ScheduleStatusIn)
+
+			if err != nil {
+				log.Println("ScheduleService", err.Error())
+			}
+
 			log.Println("ScheduleService", "In")
 
 			time.Sleep(6 * time.Second)

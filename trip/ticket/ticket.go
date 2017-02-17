@@ -12,6 +12,10 @@ const TicketStatusCancel = 300  //已取消
 const TicketStatusTimeout = 400 //已超时
 const TicketStatusRefund = 500  //已退款
 
+const TicketInStatusNone = 0      // 未乘坐
+const TicketInStatusOK = 200      // 已乘坐
+const TicketInStatusExpires = 300 // 已过期
+
 /**
  * 车票
  */
@@ -23,6 +27,7 @@ type Ticket struct {
 	Uid           int64  `json:"uid,string"`        //用户ID
 	Date          int64  `json:"date"`              //日期
 	Status        int    `json:"status"`            //状态
+	InStatus      int    `json:"inStatus"`          //乘坐状态
 	SeatNo        string `json:"seatNo"`            //座位
 	PayValue      int64  `json:"payValue"`          //支付金额
 	RefundValue   int64  `json:"refundValue"`       //退款金额

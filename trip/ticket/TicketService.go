@@ -30,6 +30,35 @@ func (S *TicketService) Handle(a app.IApp, task app.ITask) error {
 	return app.ServiceReflectHandle(a, task, S)
 }
 
+func (S *TicketService) HandleInitTask(a ITicketApp, task *app.InitTask) error {
+
+	var db, err = a.GetDB()
+
+	if err != nil {
+		return err
+	}
+
+	go func() {
+
+		for {
+
+			_, err := db.Query(fmt.Sprintf("UPDATE %s%s as t INNER JOIN %s%s as l ON t.lineid=l.id SET t.instatus=300 WHERE ? > t.date + l.time + 1800", a.GetPrefix(), a.GetTicketTable().Name, a.GetPrefix(), a.GetLineTable().Name), time.Now().Unix())
+
+			if err != nil {
+				log.Println("TicketService", err.Error())
+			}
+
+			log.Println("TicketService", "InStatus", "Refresh")
+
+			time.Sleep(6 * time.Second)
+
+		}
+
+	}()
+
+	return nil
+}
+
 func (S *TicketService) HandleTicketPreCreateTask(a ITicketApp, task *TicketPreCreateTask) error {
 
 	var db, err = a.GetDB()

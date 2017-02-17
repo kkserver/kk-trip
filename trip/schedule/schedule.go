@@ -40,4 +40,5 @@ type IScheduleApp interface {
 	GetPrefix() string
 	GetScheduleTable() *kk.DBTable
 	GetTicketTable() *kk.DBTable
+	GetLineTable() *kk.DBTable
 }
