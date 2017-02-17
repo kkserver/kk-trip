@@ -56,4 +56,5 @@ type ITicketApp interface {
 	GetTicketTable() *kk.DBTable
 	GetScheduleTable() *kk.DBTable
 	GetLineTable() *kk.DBTable
+	GetRunloop() *kk.Dispatch
 }

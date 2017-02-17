@@ -51,6 +51,8 @@ type TripApp struct {
 	Suggest *suggest.SuggestService
 
 	Remote *remote.Service
+
+	runloop *kk.Dispatch
 }
 
 func (A *TripApp) GetDB() (*sql.DB, error) {
@@ -95,4 +97,11 @@ func (A *TripApp) GetDriverTable() *kk.DBTable {
 
 func (A *TripApp) GetCarTable() *kk.DBTable {
 	return &A.CarTable
+}
+
+func (A *TripApp) GetRunloop() *kk.Dispatch {
+	if A.runloop == nil {
+		A.runloop = kk.NewDispatch()
+	}
+	return A.runloop
 }

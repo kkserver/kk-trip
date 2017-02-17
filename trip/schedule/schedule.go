@@ -41,4 +41,5 @@ type IScheduleApp interface {
 	GetScheduleTable() *kk.DBTable
 	GetTicketTable() *kk.DBTable
 	GetLineTable() *kk.DBTable
+	GetRunloop() *kk.Dispatch
 }
