@@ -62,7 +62,7 @@ func (S *ScheduleService) HandleInitTask(a IScheduleApp, task *app.InitTask) err
 
 			log.Println("ScheduleService", "In")
 
-			time.Sleep(6 * time.Second)
+			time.Sleep(31 * time.Second)
 
 		}
 

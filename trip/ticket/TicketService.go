@@ -50,7 +50,7 @@ func (S *TicketService) HandleInitTask(a ITicketApp, task *app.InitTask) error {
 
 			log.Println("TicketService", "InStatus", "Refresh")
 
-			time.Sleep(6 * time.Second)
+			time.Sleep(30 * time.Second)
 
 		}
 
