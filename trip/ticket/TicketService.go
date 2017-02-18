@@ -906,31 +906,40 @@ func (S *TicketService) HandleTriggerOrderTimeoutDidTask(a ITicketApp, task *ord
 
 	err = func() error {
 
-		rows, err := db.Query(fmt.Sprintf("SELECT scheduleid, COUNT(id) FROM %s%s WHERE orderid=? AND status=? GROUP BY scheduleid", a.GetPrefix(), a.GetTicketTable().Name), task.Order.Id, TicketStatusNone)
+		rows, err := tx.Query(fmt.Sprintf("SELECT scheduleid, COUNT(id) FROM %s%s WHERE orderid=? AND status=? GROUP BY scheduleid", a.GetPrefix(), a.GetTicketTable().Name), task.Order.Id, TicketStatusNone)
 
 		if err != nil {
 			return err
 		}
 
-		defer rows.Close()
-
-		var id int64 = 0
-		var count int64 = 0
+		var counts = []ScheduleCount{}
+		var count = ScheduleCount{}
+		var scanner = kk.NewDBScaner(&count)
 
 		for rows.Next() {
 
-			err = rows.Scan(&id, &count)
+			err = scanner.Scan(rows)
 
 			if err != nil {
-				return err
+				log.Println("TicketService", "TriggerOrderTimeoutDidTask", "Fail", err.Error())
+				break
 			}
 
-			log.Println(id, count)
+			counts = append(counts, count)
 
-			_, err = tx.Exec(fmt.Sprintf("UPDATE %s%s SET `count` = `count` - ? WHERE id=?", a.GetPrefix(), a.GetScheduleTable().Name), count, id)
+		}
+
+		rows.Close()
+
+		for _, count = range counts {
+
+			_, err = tx.Exec(fmt.Sprintf("UPDATE %s%s SET `count` = `count` - ? WHERE id=?", a.GetPrefix(), a.GetScheduleTable().Name), count.Count, count.Id)
+
 			if err != nil {
-				return err
+				log.Println("TicketService", "TriggerOrderTimeoutDidTask", "Fail", err.Error())
+				break
 			}
+
 		}
 
 		_, err = tx.Exec(fmt.Sprintf("UPDATE %s%s SET status=? WHERE status=? AND orderid=?", a.GetPrefix(), a.GetTicketTable().Name), TicketStatusTimeout, TicketStatusNone, task.Order.Id)
@@ -947,7 +956,7 @@ func (S *TicketService) HandleTriggerOrderTimeoutDidTask(a ITicketApp, task *ord
 	}
 
 	if err != nil {
-		log.Println(err)
+		log.Println("TicketService", "TriggerOrderTimeoutDidTask", "Fail", err.Error())
 		tx.Rollback()
 	}
 
@@ -989,28 +998,38 @@ func (S *TicketService) HandleTriggerOrderCancelDidTask(a ITicketApp, task *orde
 
 	err = func() error {
 
-		rows, err := db.Query(fmt.Sprintf("SELECT scheduleid, COUNT(id) FROM %s%s WHERE orderid=? AND status=? GROUP BY scheduleid", a.GetPrefix(), a.GetTicketTable().Name), task.Order.Id, TicketStatusNone)
+		rows, err := tx.Query(fmt.Sprintf("SELECT scheduleid as `id`, COUNT(id) as `count` FROM %s%s WHERE orderid=? AND status=? GROUP BY scheduleid", a.GetPrefix(), a.GetTicketTable().Name), task.Order.Id, TicketStatusNone)
 
 		if err != nil {
 			return err
 		}
 
-		defer rows.Close()
-
-		var id int64 = 0
-		var count int64 = 0
+		var counts = []ScheduleCount{}
+		var count = ScheduleCount{}
+		var scanner = kk.NewDBScaner(&count)
 
 		for rows.Next() {
-			err = rows.Scan(&id, &count)
+
+			err = scanner.Scan(rows)
+
 			if err != nil {
-				return err
+				log.Println("TicketService", "TriggerOrderCancelDidTask", "Fail", err.Error())
+				break
 			}
 
-			log.Println(id, count)
+			counts = append(counts, count)
 
-			_, err = tx.Exec(fmt.Sprintf("UPDATE %s%s SET `count` = `count` - ? WHERE id=?", a.GetPrefix(), a.GetScheduleTable().Name), count, id)
+		}
+
+		rows.Close()
+
+		for _, count = range counts {
+
+			_, err = tx.Exec(fmt.Sprintf("UPDATE %s%s SET `count` = `count` - ? WHERE id=?", a.GetPrefix(), a.GetScheduleTable().Name), count.Count, count.Id)
+
 			if err != nil {
-				return err
+				log.Println("TicketService", "TriggerOrderCancelDidTask", "Fail", err.Error())
+				break
 			}
 		}
 
@@ -1028,7 +1047,7 @@ func (S *TicketService) HandleTriggerOrderCancelDidTask(a ITicketApp, task *orde
 	}
 
 	if err != nil {
-		log.Println(err)
+		log.Println("TicketService", "TriggerOrderCancelDidTask", "Fail", err.Error())
 		tx.Rollback()
 	}
 

@@ -49,6 +49,11 @@ type TicketValue struct {
 	Value       int64 `json:"value"`       //金额
 }
 
+type ScheduleCount struct {
+	Id    int64 `json:"id"`
+	Count int   `json:"count"`
+}
+
 type ITicketApp interface {
 	app.IApp
 	GetDB() (*sql.DB, error)
