@@ -45,6 +45,8 @@ func (S *ScheduleService) HandleRunloopTask(a IScheduleApp, task *app.RunloopTas
 
 	fn = func() {
 
+		log.Println("ScheduleService", "Runloop", "...")
+
 		now := time.Now()
 		now = time.Date(now.Year(), now.Month(), now.Day(), 23, 59, 59, 0, now.Location())
 
