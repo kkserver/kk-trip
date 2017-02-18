@@ -906,7 +906,7 @@ func (S *TicketService) HandleTriggerOrderTimeoutDidTask(a ITicketApp, task *ord
 
 	err = func() error {
 
-		rows, err := tx.Query(fmt.Sprintf("SELECT scheduleid, COUNT(id) FROM %s%s WHERE orderid=? AND status=? GROUP BY scheduleid", a.GetPrefix(), a.GetTicketTable().Name), task.Order.Id, TicketStatusNone)
+		rows, err := tx.Query(fmt.Sprintf("SELECT scheduleid as `id`, COUNT(id) as `count` FROM %s%s WHERE orderid=? AND status=? GROUP BY scheduleid", a.GetPrefix(), a.GetTicketTable().Name), task.Order.Id, TicketStatusNone)
 
 		if err != nil {
 			return err
