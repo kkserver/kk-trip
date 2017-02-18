@@ -1049,6 +1049,8 @@ func (S *TicketService) HandleTriggerOrderCancelDidTask(a ITicketApp, task *orde
 	if err != nil {
 		log.Println("TicketService", "TriggerOrderCancelDidTask", "Fail", err.Error())
 		tx.Rollback()
+	} else {
+		log.Println("TriggerOrderCancelDidTask", "OK")
 	}
 
 	return nil
