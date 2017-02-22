@@ -66,6 +66,14 @@ func (S *ScheduleService) HandleRunloopTask(a IScheduleApp, task *app.RunloopTas
 			log.Println("ScheduleService", "Runloop", "Fail", err.Error())
 		}
 
+		log.Println("ScheduleService", "Runloop", "SQL", fmt.Sprintf("UPDATE %s%s as s INNER JOIN %s%s as l ON s.lineid=l.id SET s.status=? WHERE ? > s.date + l.time AND s.status IN (?,?)", a.GetPrefix(), a.GetScheduleTable().Name, a.GetPrefix(), a.GetLineTable().Name))
+
+		_, err = db.Exec(fmt.Sprintf("UPDATE %s%s as s INNER JOIN %s%s as l ON s.lineid=l.id SET s.status=? WHERE ? > s.date + l.endtime AND s.status IN (?,?)", a.GetPrefix(), a.GetScheduleTable().Name, a.GetPrefix(), a.GetLineTable().Name), ScheduleStatusEnd, time.Now().Unix(), ScheduleStatusStart, ScheduleStatusIn)
+
+		if err != nil {
+			log.Println("ScheduleService", "Runloop", "Fail", err.Error())
+		}
+
 		log.Println("ScheduleService", "Runloop", "OK")
 
 		a.GetRunloop().AsyncDelay(fn, 10*time.Second)

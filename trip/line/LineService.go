@@ -50,6 +50,7 @@ func (S *LineService) HandleLineCreateTask(a ILineApp, task *LineCreateTask) err
 
 	if len(ts) > 0 {
 		v.Time = int64(ts[0])
+		v.EndTime = int64(ts[len(ts)-1])
 	}
 
 	v.Ctime = time.Now().Unix()
@@ -123,6 +124,7 @@ func (S *LineService) HandleLineSetTask(a ILineApp, task *LineSetTask) error {
 			ts := LineTimeSliceFromString(v.Times)
 			if len(ts) > 0 {
 				v.Time = int64(ts[0])
+				v.EndTime = int64(ts[len(ts)-1])
 			}
 		}
 

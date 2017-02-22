@@ -21,6 +21,7 @@ type Line struct {
 	Price     int64  `json:"price"`          //原价
 	Alias     string `json:"alias"`          //别名
 	Time      int64  `json:"time"`           //发车时间
+	EndTime   int64  `json:"endTime"`        //收车时间
 	Status    int    `json:"status"`         //状态
 	Direction int    `json:"direction"`      //方向
 	Times     string `json:"times"`          //站点时间
