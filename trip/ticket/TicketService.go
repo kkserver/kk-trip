@@ -1080,7 +1080,7 @@ func (S *TicketService) HandleTicketCalendarTask(a ITicketApp, task *TicketCalen
 	var scanner = kk.NewDBScaner(&v)
 
 	rs, err := kk.DBQuery(db, a.GetScheduleTable(), a.GetPrefix(),
-		" WHERE lineid=? AND date>=? AND status=?", task.LineId, now.Unix(), schedule.ScheduleStatusIn)
+		" WHERE lineid=? AND date>=? AND status IN (?,?)", task.LineId, now.Unix(), schedule.ScheduleStatusIn, schedule.ScheduleStatusStart)
 
 	if err != nil {
 		task.Result.Errno = ERROR_TICKET
