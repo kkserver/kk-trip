@@ -780,6 +780,16 @@ func (S *TicketService) HandleTicketCountTask(a ITicketApp, task *TicketCountTas
 		args = append(args, task.EndDate)
 	}
 
+	if task.StartRefundTime != 0 {
+		sql.WriteString(" AND refundtime>=?")
+		args = append(args, task.StartRefundTime)
+	}
+
+	if task.EndRefundTime != 0 {
+		sql.WriteString(" AND refundtime<?")
+		args = append(args, task.EndRefundTime)
+	}
+
 	task.Result.Count, err = kk.DBQueryCount(db, a.GetTicketTable(), a.GetPrefix(), sql.String(), args...)
 
 	if err != nil {
@@ -844,8 +854,9 @@ func (S *TicketService) HandleTicketRefundTask(a ITicketApp, task *TicketRefundT
 			v.Status = TicketStatusRefund
 			v.RefundType = task.RefundType
 			v.RefundTradeNo = task.RefundTradeNo
+			v.RefundTime = time.Now().Unix()
 
-			_, err = kk.DBUpdateWithKeys(tx, a.GetTicketTable(), a.GetPrefix(), &v, map[string]bool{"status": true, "refundtype": true, "refundtradeno": true})
+			_, err = kk.DBUpdateWithKeys(tx, a.GetTicketTable(), a.GetPrefix(), &v, map[string]bool{"status": true, "refundtype": true, "refundtradeno": true, "refundtime": true})
 
 			if err != nil {
 				return err

@@ -11,13 +11,15 @@ type TicketCountTaskResult struct {
 
 type TicketCountTask struct {
 	app.Task
-	Uid       int64  `json:"uid"`     //用户ID
-	OrderId   int64  `json:"orderId"` //订单ID
-	LineId    int64  `json:"lineId"`  //班次ID
-	Status    string `json:"status"`
-	StartDate int64  `json:"startDate"`
-	EndDate   int64  `json:"endDate"`
-	Result    TicketCountTaskResult
+	Uid             int64  `json:"uid"`     //用户ID
+	OrderId         int64  `json:"orderId"` //订单ID
+	LineId          int64  `json:"lineId"`  //班次ID
+	Status          string `json:"status"`
+	StartDate       int64  `json:"startDate"`
+	EndDate         int64  `json:"endDate"`
+	StartRefundTime int64  `json:"startRefundTime"`
+	EndRefundTime   int64  `json:"endRefundTime"`
+	Result          TicketCountTaskResult
 }
 
 func (task *TicketCountTask) GetResult() interface{} {

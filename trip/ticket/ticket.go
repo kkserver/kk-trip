@@ -34,6 +34,7 @@ type Ticket struct {
 	Value         int64  `json:"value"`             //金额
 	RefundType    string `json:"refundType"`        //退款类型
 	RefundTradeNo string `json:"refundTradeNo"`     //退款订单号
+	RefundTime    int64  `json:"refundTime"`        //退款时间
 	Ctime         int64  `json:"ctime"`
 }
 
