@@ -197,11 +197,13 @@ func (S *ScheduleService) HandleScheduleBatchSetTask(a IScheduleApp, task *Sched
 					return err
 				}
 
-				date, err := time.Parse("2006-01-02", sdate)
+				date, err := time.ParseInLocation("2006-01-02", sdate, time.Local)
 
 				if err != nil {
 					return err
 				}
+
+				date = time.Date(date.Year(), date.Month(), date.Day(), 0, 0, 0, 0, date.Location())
 
 				v := Schedule{}
 
