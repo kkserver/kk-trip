@@ -4,6 +4,7 @@ import (
 	"database/sql"
 	"github.com/kkserver/kk-lib/kk"
 	"github.com/kkserver/kk-lib/kk/app"
+	"github.com/kkserver/kk-lib/kk/app/client"
 	"github.com/kkserver/kk-lib/kk/app/remote"
 	"github.com/kkserver/kk-order/order"
 	"github.com/kkserver/kk-trip/trip/car"
@@ -51,6 +52,10 @@ type TripApp struct {
 	Suggest *suggest.SuggestService
 
 	Remote *remote.Service
+
+	Client       *client.Service
+	CacheClient  *client.WithService
+	CouponClient *client.WithService
 
 	runloop *kk.Dispatch
 }

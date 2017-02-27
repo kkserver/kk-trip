@@ -30,9 +30,9 @@ type Ticket struct {
 	InStatus      int    `json:"inStatus"`          //乘坐状态
 	SeatNo        string `json:"seatNo"`            //座位
 	PayValue      int64  `json:"payValue"`          //支付金额
-	RefundValue   int64  `json:"refundValue"`       //退款金额
 	Value         int64  `json:"value"`             //金额
 	RefundType    string `json:"refundType"`        //退款类型
+	RefundValue   int64  `json:"refundValue"`       //退款金额
 	RefundTradeNo string `json:"refundTradeNo"`     //退款订单号
 	RefundTime    int64  `json:"refundTime"`        //退款时间
 	Ctime         int64  `json:"ctime"`
@@ -45,9 +45,8 @@ type TicketItem struct {
 }
 
 type TicketValue struct {
-	PayValue    int64 `json:"payValue"`    //支付金额
-	RefundValue int64 `json:"refundValue"` //退款金额
-	Value       int64 `json:"value"`       //金额
+	PayValue int64 `json:"payValue"` //支付金额
+	Value    int64 `json:"value"`    //金额
 }
 
 type ScheduleCount struct {
