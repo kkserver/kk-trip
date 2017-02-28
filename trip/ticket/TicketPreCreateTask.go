@@ -13,11 +13,10 @@ type TicketPreCreateTaskResult struct {
 
 type TicketPreCreateTask struct {
 	app.Task
-	Uid      int64        `json:"uid,string"`
-	Text     string       `json:"text"` //车票 lineId:date:seatno;lineId:date:seatno;
-	Items    []TicketItem `json:"items"`
-	CouponId int64        `json:"couponId"`
-	Result   TicketPreCreateTaskResult
+	Uid    int64        `json:"uid,string"`
+	Text   string       `json:"text"` //车票 lineId:date:seatno;lineId:date:seatno;
+	Items  []TicketItem `json:"items"`
+	Result TicketPreCreateTaskResult
 }
 
 func (task *TicketPreCreateTask) GetResult() interface{} {

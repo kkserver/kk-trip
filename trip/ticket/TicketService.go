@@ -3,11 +3,9 @@ package ticket
 import (
 	"bytes"
 	"fmt"
-	"github.com/kkserver/kk-coupon/coupon"
 	"github.com/kkserver/kk-lib/kk"
 	"github.com/kkserver/kk-lib/kk/app"
 	"github.com/kkserver/kk-lib/kk/dynamic"
-	"github.com/kkserver/kk-lib/kk/json"
 	"github.com/kkserver/kk-order/order"
 	"github.com/kkserver/kk-trip/trip/line"
 	"github.com/kkserver/kk-trip/trip/schedule"
@@ -243,43 +241,6 @@ func (S *TicketService) HandleTicketPreCreateTask(a ITicketApp, task *TicketPreC
 		}
 	}
 
-	if task.CouponId != 0 {
-
-		t := coupon.CouponUseQueryTask{}
-		t.Id = task.CouponId
-		t.Uid = task.Uid
-		t.Value = value
-		t.Count = int64(len(values))
-
-		app.Handle(a, &t)
-
-		if t.Result.Errno != 0 {
-			task.Result.Errno = t.Result.Errno
-			task.Result.Errmsg = t.Result.Errmsg
-			return nil
-		} else if t.Result.Coupons == nil || len(t.Result.Coupons) == 0 {
-			task.Result.Errno = coupon.ERROR_COUPON_NOT_FOUND
-			task.Result.Errmsg = "Not found coupon"
-			return nil
-		}
-
-		offer := t.Result.Coupons[0].Offer
-
-		if offer > 0 {
-			payValue = payValue - offer
-			ioffer := offer / int64(len(values))
-			for i, vv := range values {
-				if i+1 == len(values) {
-					vv.PayValue = vv.PayValue - offer
-				} else {
-					vv.PayValue = vv.PayValue - ioffer
-					offer = offer - ioffer
-				}
-			}
-		}
-
-	}
-
 	task.Result.Value = value
 	task.Result.PayValue = payValue
 	task.Result.Values = values
@@ -337,7 +298,6 @@ func (S *TicketService) HandleTicketCreateTask(a ITicketApp, task *TicketCreateT
 		t := TicketPreCreateTask{}
 		t.Items = items
 		t.Uid = task.Uid
-		t.CouponId = task.CouponId
 		app.Handle(a, &t)
 		if t.Result.Values != nil {
 			values = t.Result.Values
@@ -374,50 +334,6 @@ func (S *TicketService) HandleTicketCreateTask(a ITicketApp, task *TicketCreateT
 			task.Result.Errmsg = "Can not create order"
 			return nil
 		}
-	}
-
-	if task.CouponId != 0 {
-
-		err = func() error {
-
-			t := coupon.CouponUseTask{}
-			t.Id = task.CouponId
-			t.Value = value
-			t.Count = len(values)
-			t.UseType = "order"
-			t.UseTradeNo = fmt.Sprintf("%d", odr.Id)
-
-			app.Handle(a, &t)
-
-			if t.Result.Errno != 0 {
-				return app.NewError(t.Result.Errno, t.Result.Errmsg)
-			} else if t.Result.Coupon == nil {
-				return app.NewError(coupon.ERROR_COUPON_NOT_FOUND, "Not Found coupon")
-			}
-
-			return nil
-		}()
-
-		if err != nil {
-
-			{
-				t := order.OrderCancelTask{}
-				t.Id = odr.Id
-				app.Handle(a, &t)
-			}
-
-			e, ok := err.(*app.Error)
-			if ok {
-				task.Result.Errno = e.Errno
-				task.Result.Errmsg = e.Errmsg
-				return nil
-			} else {
-				task.Result.Errno = ERROR_TICKET
-				task.Result.Errmsg = err.Error()
-				return nil
-			}
-		}
-
 	}
 
 	tx, err := db.Begin()
@@ -575,12 +491,6 @@ func (S *TicketService) HandleTicketCreateTask(a ITicketApp, task *TicketCreateT
 			app.Handle(a, &t)
 		}
 
-		if task.CouponId != 0 {
-			t := coupon.CouponCancelTask{}
-			t.Id = task.CouponId
-			app.Handle(a, &t)
-		}
-
 		e, ok := err.(*app.Error)
 		if ok {
 			task.Result.Errno = e.Errno
@@ -607,10 +517,6 @@ func (S *TicketService) HandleTicketCreateTask(a ITicketApp, task *TicketCreateT
 		}
 
 		options["items"] = items
-
-		if task.CouponId != 0 {
-			options["couponId"] = task.CouponId
-		}
 
 		t.Options = options
 
@@ -1065,19 +971,6 @@ func (S *TicketService) HandleTriggerOrderTimeoutDidTask(a ITicketApp, task *ord
 		tx.Rollback()
 	} else {
 
-		var options interface{} = nil
-
-		err = json.Decode([]byte(task.Order.Options), &options)
-
-		if err == nil && options != nil {
-			couponId := dynamic.IntValue(dynamic.Get(options, "couponId"), 0)
-			if couponId != 0 {
-				t := coupon.CouponCancelTask{}
-				t.Id = couponId
-				app.Handle(a, &t)
-			}
-		}
-
 		log.Println("TicketService", "TriggerOrderTimeoutDidTask", "OK")
 	}
 
@@ -1092,10 +985,79 @@ func (S *TicketService) HandleTriggerOrderPayDidTask(a ITicketApp, task *order.T
 		return nil
 	}
 
-	_, err = db.Exec(fmt.Sprintf("UPDATE %s%s SET status=? WHERE status=? AND orderid=?", a.GetPrefix(), a.GetTicketTable().Name), TicketStatusPay, TicketStatusNone, task.Order.Id)
+	tx, err := db.Begin()
+
+	err = func() error {
+
+		v := Ticket{}
+
+		tickets := []Ticket{}
+
+		scanner := kk.NewDBScaner(&v)
+
+		rows, err := kk.DBQuery(tx, a.GetTicketTable(), a.GetPrefix(), " WHERE orderid=? ORDER BY id ASC", task.Order.Id)
+
+		if err != nil {
+			return err
+		}
+
+		payValue := int64(0)
+
+		for rows.Next() {
+
+			err = scanner.Scan(rows)
+
+			if err != nil {
+				rows.Close()
+				return err
+			}
+
+			tickets = append(tickets, v)
+
+			payValue = payValue + v.PayValue
+
+		}
+
+		rows.Close()
+
+		if len(tickets) > 0 {
+
+			keys := map[string]bool{"payvalue": true, "status": true}
+
+			tValue := int64(0)
+
+			for i, v := range tickets {
+
+				if i+1 == len(tickets) {
+					v.PayValue = task.Order.PayValue - tValue
+				} else {
+					v.PayValue = v.PayValue * task.Order.PayValue / payValue
+				}
+
+				tValue = tValue + v.PayValue
+
+				v.Status = TicketStatusPay
+
+				_, err = kk.DBUpdateWithKeys(tx, a.GetTicketTable(), a.GetPrefix(), &v, keys)
+
+				if err != nil {
+					return err
+				}
+			}
+		}
+
+		return nil
+	}()
+
+	if err == nil {
+		err = tx.Commit()
+	}
 
 	if err != nil {
-		return nil
+		tx.Rollback()
+		log.Println("TicketService", "TriggerOrderPayDidTask", "Fail", err)
+	} else {
+		log.Println("TicketService", "TriggerOrderPayDidTask", "OK")
 	}
 
 	return nil
@@ -1171,19 +1133,6 @@ func (S *TicketService) HandleTriggerOrderCancelDidTask(a ITicketApp, task *orde
 		log.Println("TicketService", "TriggerOrderCancelDidTask", "Fail", err.Error())
 		tx.Rollback()
 	} else {
-
-		var options interface{} = nil
-
-		err = json.Decode([]byte(task.Order.Options), &options)
-
-		if err == nil && options != nil {
-			couponId := dynamic.IntValue(dynamic.Get(options, "couponId"), 0)
-			if couponId != 0 {
-				t := coupon.CouponCancelTask{}
-				t.Id = couponId
-				app.Handle(a, &t)
-			}
-		}
 
 		log.Println("TicketService", "TriggerOrderCancelDidTask", "OK")
 	}

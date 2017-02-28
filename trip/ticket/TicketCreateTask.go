@@ -19,12 +19,11 @@ type TicketCreateItem struct {
 
 type TicketCreateTask struct {
 	app.Task
-	Uid      int64        `json:"uid,string"`
-	Text     string       `json:"text"` //车票 lineId:date:seatno;lineId:date:seatno;
-	Items    []TicketItem `json:"items"`
-	Expires  int64        `json:"expires"`
-	CouponId int64        `json:"couponId"`
-	Result   TicketCreateTaskResult
+	Uid     int64        `json:"uid,string"`
+	Text    string       `json:"text"` //车票 lineId:date:seatno;lineId:date:seatno;
+	Items   []TicketItem `json:"items"`
+	Expires int64        `json:"expires"`
+	Result  TicketCreateTaskResult
 }
 
 func (task *TicketCreateTask) GetResult() interface{} {
