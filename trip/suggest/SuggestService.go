@@ -122,6 +122,7 @@ func (S *SuggestService) HandleSuggestLineTask(a ISuggestApp, task *SuggestLineT
 	if len(lines) < task.Limit {
 
 		t := route.RouteNearbyTask{}
+		t.Phone = task.Phone
 		t.Latitude = task.Latitude
 		t.Longitude = task.Longitude
 		t.Distance = task.Distance
@@ -170,6 +171,7 @@ func (S *SuggestService) HandleSuggestLineTask(a ISuggestApp, task *SuggestLineT
 	if len(lines) < task.Limit {
 
 		t := line.LineQueryTask{}
+		t.Phone = task.Phone
 		t.PageSize = task.Limit - len(lines)
 		t.Status = "1"
 

@@ -24,6 +24,7 @@ type RouteNearbyTask struct {
 	Longitude float64 `json:"longitude"` //经度
 	Latitude  float64 `json:"latitude"`  //纬度
 	Distance  float64 `json:"distance"`  //路面距离 km
+	Phone     string  `json:"phone"`
 	PageIndex int     `json:"p"`
 	PageSize  int     `json:"size"`
 	Counter   bool    `json:"counter"`

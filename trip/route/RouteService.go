@@ -531,6 +531,11 @@ func (S *RouteService) HandleRouteNearbyTask(a IRouteApp, task *RouteNearbyTask)
 		sql.WriteString(")")
 	}
 
+	if task.Phone != "" {
+		sql.WriteString(" AND (ISNULL(r.whitelist) OR r.whitelist='' OR r.whitelist LIKE ?)")
+		args = append(args, "%"+task.Phone+"%")
+	}
+
 	var pageIndex = task.PageIndex
 	var pageSize = task.PageSize
 

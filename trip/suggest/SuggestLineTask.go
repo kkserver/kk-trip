@@ -13,6 +13,7 @@ type SuggestLineTaskResult struct {
 type SuggestLineTask struct {
 	app.Task
 	Uid       int64   `json:"uid,string"`
+	Phone     string  `json:"phone"`
 	Status    string  `json:"status"`
 	Longitude float64 `json:"longitude"` //经度
 	Latitude  float64 `json:"latitude"`  //纬度
