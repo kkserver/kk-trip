@@ -26,6 +26,7 @@ type LineQueryTask struct {
 	RouteId    int64  `json:"routeId"`
 	CityIds    string `json:"cityIds"`
 	CityPrefix string `json:"cityPrefix"`
+	Phone      string `json:"phone"`
 	OrderBy    string `json:"orderBy"` // desc, asc
 	PageIndex  int    `json:"p"`
 	PageSize   int    `json:"size"`

@@ -22,6 +22,7 @@ type RouteSetTask struct {
 	StartCityPath interface{} `json:"startCityPath"` //开始城市
 	EndCityId     interface{} `json:"endCityId"`     //结束城市ID
 	EndCityPath   interface{} `json:"endCityPath"`   //结束城市
+	WhiteList     interface{} `json:"whiteList"`     //白名单
 	Result        RouteSetTaskResult
 }
 

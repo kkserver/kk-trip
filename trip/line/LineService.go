@@ -397,6 +397,11 @@ func (S *LineService) HandleLineQueryTask(a ILineApp, task *LineQueryTask) error
 			args = append(args, task.RouteId)
 		}
 
+		if task.Phone != "" {
+			sql.WriteString(" AND (ISNULL(r.whitelist) OR r.whitelist='' OR r.whitelist LIKE ?)")
+			args = append(args, "%"+task.Phone+"%")
+		}
+
 		var pageIndex = task.PageIndex
 		var pageSize = task.PageSize
 

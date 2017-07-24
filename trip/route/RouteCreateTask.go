@@ -20,6 +20,7 @@ type RouteCreateTask struct {
 	StartCityPath string  `json:"startCityPath"` //开始城市
 	EndCityId     int64   `json:"endCityId"`     //结束城市ID
 	EndCityPath   string  `json:"endCityPath"`   //结束城市
+	WhiteList     string  `json:"whiteList"`     //白名单
 	Result        RouteCreateTaskResult
 }
 
